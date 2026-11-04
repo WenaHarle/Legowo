@@ -30,6 +30,34 @@ LEGOWO_WRITE(10) {                                            // switch dashboar
 Koneksi Wi-Fi, MQTT over WebSocket + TLS (sertifikat diverifikasi), reconnect otomatis, dan OTA
 sudah ditangani library. Server default `lmqtt.madewena.com` sudah tertanam; tidak perlu mengatur apa pun.
 
+## Tampilan aplikasi
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dashboard-dark.png">
+  <img src="docs/screenshots/dashboard.png" alt="Dashboard Legowo dengan widget nilai, gauge, switch, status, slider, grafik, dan tabel">
+</picture>
+
+Dashboard dengan semua jenis widget: **nilai** (suhu, cahaya), **gauge** (kelembapan), **switch**
+(lampu, channel 10), **status** perangkat, **slider** (PWM, channel 11), **grafik** riwayat, dan
+**tabel** nilai terbaru. Nilai bergerak real-time; widget disusun bebas dengan mode *Edit*.
+
+<table>
+  <tr>
+    <td width="62%"><img src="docs/screenshots/new-device.png" alt="Tambah perangkat: device key dan kode Arduino siap salin"></td>
+    <td rowspan="2"><img src="docs/screenshots/mobile.png" alt="Dashboard di ponsel"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/device-data.png" alt="Detail perangkat: grafik dan data tersimpan"></td>
+  </tr>
+  <tr>
+    <td>Atas: <b>Tambah perangkat</b> langsung memberi kode Arduino siap salin. Bawah: tab <b>Data</b>
+    perangkat (grafik dan nilai tersimpan).</td>
+    <td>Tampilan ponsel.</td>
+  </tr>
+</table>
+
+<sub>Gambar memakai data demo; device key di gambar sudah tidak berlaku.</sub>
+
 ## Mulai dalam 5 menit
 
 1. **Pasang board ESP32** (sekali saja). Arduino IDE → *File → Preferences → Additional boards manager URLs*, isi:
