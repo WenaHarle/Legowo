@@ -1,217 +1,139 @@
-# Legowo Arduino Library
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/legowo-logo.svg">
+    <img src="docs/legowo-logo-light.svg" alt="Legowo" width="260">
+  </picture>
+</p>
 
-A Blynk-like Arduino library for the Legowo IoT platform.
+# Legowo untuk Arduino
 
-## Installation
-
-### Arduino IDE
-1. Download this library folder
-2. Copy to `Documents/Arduino/libraries/`
-3. Restart Arduino IDE
-
-### PlatformIO
-Add to `platformio.ini`:
-```ini
-lib_deps =
-    https://github.com/your-repo/legowo-firmware
-```
-
-## Quick Start
+Library Arduino untuk menghubungkan **ESP32** ke platform IoT **Legowo**: kirim data sensor ke
+dashboard, kendalikan pin dari dashboard, dan terima update firmware (OTA) dari server.
 
 ```cpp
-#include "Legowo.h"
-
-#define WIFI_SSID     "your-wifi"
-#define WIFI_PASSWORD "your-password"
-#define MQTT_SERVER   "your-server-ip"
-#define DEVICE_KEY    "device-key-from-dashboard"
-
-Legowo legowo(DEVICE_KEY);
+#define LEGOWO_FW_VERSION "1.0.0"
+#include <Legowo.h>
 
 void setup() {
-  Serial.begin(115200);
-  pinMode(LED_PIN, OUTPUT);
-  
-  // Register handler: called when dashboard SENDS data to channel 10
-  legowo.onReceive(10, [](LegowoParam param) {
-    digitalWrite(LED_PIN, param.asBool());
-  });
-  
-  legowo.begin(WIFI_SSID, WIFI_PASSWORD, MQTT_SERVER);
+  Legowo.begin("NAMA_WIFI", "PASSWORD_WIFI", "DEVICE_KEY");   // key dari dashboard
 }
 
 void loop() {
-  legowo.run();
-  
-  // Send sensor data TO dashboard
-  legowo.write(0, temperature);  // Upload to cloud
-  legowo.write(1, humidity);
-  
-  // Read cached value (last received from dashboard)
-  float ledState = legowo.read(10);
+  Legowo.run();                                               // tanpa delay()
+}
+
+LEGOWO_WRITE(10) {                                            // switch dashboard -> channel 10
+  digitalWrite(2, param.asInt());
 }
 ```
 
-## API Reference
+Koneksi Wi-Fi, MQTT over WebSocket + TLS (sertifikat diverifikasi), reconnect otomatis, dan OTA
+sudah ditangani library. Server default `lmqtt.madewena.com` sudah tertanam; tidak perlu mengatur apa pun.
 
-### Constructor
-```cpp
-Legowo legowo(deviceKey);
-```
+## Mulai dalam 5 menit
 
-### Setup
-```cpp
-legowo.begin(ssid, password, mqttServer, mqttPort);  // Port defaults to 1883
-legowo.setDebug(true);      // Enable serial debug output
-legowo.setInterval(5000);   // Set telemetry interval (ms)
-```
+1. **Pasang board ESP32** (sekali saja). Arduino IDE → *File → Preferences → Additional boards manager URLs*, isi:
+   ```
+   https://espressif.github.io/arduino-esp32/package_esp32_index.json
+   ```
+   Lalu *Tools → Board → Boards Manager* → cari **esp32** (Espressif Systems) → *Install*.
+2. **Pasang library Legowo** dengan salah satu cara:
+   - **Library Manager**: *Tools → Manage Libraries* → cari **Legowo** → *Install* (ArduinoJson ikut terpasang otomatis).
+   - **File ZIP**: unduh `Legowo-x.y.z.zip` dari [Releases](https://github.com/WenaHarle/Legowo/releases) →
+     *Sketch → Include Library → Add .ZIP Library*.
+3. **Buat perangkat** di dashboard Legowo → *Perangkat → Tambah perangkat*. Salin kode yang muncul
+   (device key hanya ditampilkan sekali).
+4. **Tempel** kode ke Arduino IDE, isi nama dan password Wi-Fi (2.4 GHz).
+5. Pilih board (mis. *ESP32 Dev Module*) dan port, lalu **Upload**. Buka *Serial Monitor* (115200):
+   ```
+   [Legowo] Wi-Fi terhubung, IP 192.168.1.23, sinyal -54 dBm
+   [Legowo] Terhubung ke server Legowo. Device ID 3f2a...
+   ```
 
-### Main Loop
-```cpp
-legowo.run();  // Call this in loop() - handles WiFi, MQTT, callbacks
-```
+Contoh lengkap ada di *File → Examples → Legowo*: `Basic`, `SwitchSlider`, `DHT_Sensor`, `RGB_LED`, `OTA_Update`.
 
-### Send Data TO Dashboard (Upload)
-```cpp
-legowo.write(channel, value);  // float, int, or bool
+## Channel
 
-// Examples:
-legowo.write(0, 25.5);         // Send temperature to channel 0
-legowo.write(1, true);         // Send boolean to channel 1
-legowo.write(2, 1024);         // Send integer to channel 2
-```
+| Channel | Arah | Contoh |
+|---|---|---|
+| 0–9 | perangkat → dashboard (sensor) | `Legowo.write(0, suhu);` |
+| 10–31 | dashboard → perangkat (kontrol) | `LEGOWO_WRITE(10) { ... }` |
 
-### Read Cached Value
-```cpp
-float value = legowo.read(channel);  // Get last value from local cache
-```
+Nilai yang diterima dari dashboard otomatis dikirim balik sebagai konfirmasi, sehingga widget
+switch/slider menampilkan keadaan sebenarnya di perangkat.
 
-### Receive Data FROM Dashboard (Callback)
-```cpp
-// Using lambda (recommended)
-legowo.onReceive(10, [](LegowoParam param) {
-  int value = param.asInt();
-  bool state = param.asBool();
-  float fval = param.asFloat();
-  digitalWrite(LED, state);
-});
+## API
 
-// Or using LEGOWO_WRITE macro (legacy, for Blynk users)
-LEGOWO_WRITE(10) {
-  digitalWrite(LED, param.asBool());
-}
-```
+| Fungsi | Keterangan |
+|---|---|
+| `Legowo.begin(ssid, pass, deviceKey)` | Mulai Wi-Fi + koneksi server (tidak memblokir). |
+| `Legowo.run()` | Panggil terus di `loop()`. |
+| `Legowo.write(ch, nilai)` | Kirim nilai ke dashboard (dikelompokkan tiap interval). |
+| `Legowo.read(ch)` | Nilai terakhir channel. |
+| `LEGOWO_WRITE(ch) { ... }` | Handler saat dashboard mengirim nilai; `param.asInt()`, `asFloat()`, `asBool()`. |
+| `Legowo.onReceive(ch, fungsi)` | Sama seperti `LEGOWO_WRITE`, didaftarkan saat runtime. |
+| `Legowo.bindSwitch(ch, pin, activeLow=false)` | Switch dashboard langsung mengendalikan pin. |
+| `Legowo.bindSlider(ch, pin, min, max)` | Slider dashboard → PWM pin. |
+| `Legowo.bindSensor(ch, pin, mode)` | Baca pin otomatis: `DIGITAL_NORMAL`, `DIGITAL_INVERTED`, `ANALOG_RAW`, `ANALOG_PERCENT`. |
+| `Legowo.every(ms, fungsi)` | Jalankan fungsi berkala tanpa `delay()` (`Legowo.timer` untuk `setTimeout`/`cancel`). |
+| `Legowo.setInterval(ms)` | Interval kirim telemetri dan baca sensor (default 2000 ms). |
+| `Legowo.setDebug(true)` | Log lebih rinci di Serial Monitor. |
+| `Legowo.connected()` / `wifiConnected()` | Status koneksi. |
+| `Legowo.disableOTA()` / `enableOTA()` | OTA **aktif secara default**. |
 
-### Connection Status
-```cpp
-if (legowo.connected()) { ... }      // MQTT connected
-if (legowo.wifiConnected()) { ... }  // WiFi connected
-```
+## Update firmware (OTA)
 
-### Sync All Channels
-```cpp
-legowo.syncAll();  // Force send all channel values
-```
+OTA sudah termasuk dan mengarah ke server Legowo (perintah lewat `lmqtt.madewena.com`, unduhan
+lewat `https://ldev.madewena.com`). Alurnya:
 
-## API Summary
+1. Naikkan `LEGOWO_FW_VERSION`, lalu *Sketch → Export Compiled Binary*.
+2. Admin meng-upload `.bin` di web admin (*Firmware*), memilih board yang sama (mis. `esp32`), lalu
+   merilis atau menjalankan rollout bertahap.
+3. Perangkat mengunduh lewat HTTPS dengan device key, memeriksa **ukuran, SHA-256, dan tanda tangan**
+   (jika `LEGOWO_OTA_PUBKEY` diisi), menulis ke slot OTA kedua, lalu restart.
+4. Firmware baru dianggap sehat setelah berhasil terhubung lagi ke server. Jika tidak terhubung dalam
+   5 menit atau restart berulang, perangkat **kembali otomatis ke firmware sebelumnya** dan melapor
+   `rolled_back`.
 
-| Method | Direction | Description |
-|--------|-----------|-------------|
-| `legowo.write(ch, val)` | Device → Dashboard | Send sensor data to cloud |
-| `legowo.read(ch)` | Local Cache | Read last value from memory |
-| `legowo.onReceive(ch, fn)` | Dashboard → Device | Handler when receiving command |
+Aturan keamanan: hanya versi **lebih baru** yang dipasang (anti-rollback), dan hanya URL dari
+`LEGOWO_OTA_HOST` yang diterima. Untuk produksi, aktifkan tanda tangan firmware: buat kunci di mesin build
+(`scripts/ota-sign.sh` di repo server), isi `LEGOWO_OTA_PUBKEY` di sketch dan `OTA_PUBLIC_KEY` di server.
 
-## Channel Mapping Guide
+**Partition scheme** harus punya dua slot OTA. Skema default Arduino IDE untuk ESP32 (*Default 4MB with
+spiffs*) sudah cukup. Jika memakai skema tanpa OTA (mis. *Huge APP*), Serial Monitor menampilkan peringatan.
 
-| Channel | Usage | Widget |
-|---------|-------|--------|
-| 0-5 | Sensor data | Gauge, Chart, Single Value |
-| 6-9 | Control feedback | Switch, Slider (two-way sync) |
-| 10-19 | Relays/outputs | Switch |
-| 20-29 | Reserved | Custom |
+## Pengaturan lanjutan
 
-## Dashboard Widget Setup
+Tulis `#define` **sebelum** `#include <Legowo.h>`:
 
-### For Reading Sensors:
-1. Create **Gauge**, **Chart**, or **Single Value** widget
-2. Select the channel your device writes to
-3. Device sends: `legowo.write(0, temperature)`
+| Define | Default |
+|---|---|
+| `LEGOWO_FW_VERSION` | `"0.0.0"` |
+| `LEGOWO_MQTT_HOST` | `"lmqtt.madewena.com"` (WSS port 443, path `/mqtt`) |
+| `LEGOWO_OTA_HOST` | `"ldev.madewena.com"` |
+| `LEGOWO_OTA_PUBKEY` | `""` (kosong = tanpa verifikasi tanda tangan) |
+| `LEGOWO_TOPIC_PREFIX` | `"legowo"` |
+| `LEGOWO_CA_CERT` | bundle root CA Let's Encrypt / Google Trust Services / Sectigo / SSL.com |
+| `LEGOWO_BOARD` | otomatis dari chip (`esp32`, `esp32s3`, `esp32c3`, ...) |
 
-### For Control (Switch):
-1. Create **Switch** widget
-2. Select channel (e.g., 10)
-3. Dashboard sends command when user toggles switch
-4. Handle with:
-```cpp
-legowo.onReceive(10, [](LegowoParam param) {
-  digitalWrite(RELAY, param.asBool());
-});
-```
-5. For feedback: `legowo.write(10, relayState)` in loop
+## Pesan di Serial Monitor
 
-### For Control (Slider):
-1. Create **Slider** widget  
-2. Select channel (e.g., 11)
-3. Set Min/Max (e.g., 0-255 for PWM)
-4. Handle with:
-```cpp
-legowo.onReceive(11, [](LegowoParam param) {
-  analogWrite(PWM_PIN, param.asInt());
-});
-```
+| Pesan | Yang perlu dilakukan |
+|---|---|
+| `Format DEVICE_KEY salah` | Salin ulang device key dari dashboard (format `<id>:<64 karakter>`). |
+| `Wi-Fi "X" tidak ditemukan` | Periksa nama Wi-Fi; ESP32 hanya mendukung 2.4 GHz. |
+| `Tidak bisa masuk ke Wi-Fi` | Periksa password Wi-Fi. |
+| `Device key ditolak server` | Key salah, sudah di-rotate, atau dicabut. Buat key baru di tab *Pengaturan* perangkat. |
+| `Sertifikat server tidak valid` | Pastikan jam bisa sinkron (internet ke NTP) dan `LEGOWO_CA_CERT` tidak diubah. |
+| `partition scheme tanpa slot OTA` | Pilih partition scheme dengan OTA di menu *Tools*. |
 
-## Two-Way Sync
+## ESP8266
 
-For control widgets to stay in sync with device state:
+Didukung secara eksperimental untuk telemetri dan kontrol, lewat MQTT TLS port 8883 ke
+`LEGOWO_MQTT_TLS_HOST`. Server Legowo di `madewena.com` saat ini hanya membuka MQTT lewat WebSocket
+(Cloudflare Tunnel), jadi ESP8266 baru bisa dipakai bila listener 8883 diaktifkan di server.
+OTA belum didukung di ESP8266.
 
-```cpp
-bool ledState = false;
+## Lisensi
 
-void setup() {
-  // Handle commands from dashboard
-  legowo.onReceive(10, [](LegowoParam param) {
-    ledState = param.asBool();
-    digitalWrite(LED_PIN, ledState);
-  });
-  
-  legowo.begin(WIFI_SSID, WIFI_PASS, MQTT_SERVER);
-}
-
-void loop() {
-  legowo.run();
-  
-  // Send state back so widget stays synced
-  legowo.write(10, ledState);
-}
-```
-
-## Examples
-
-- `examples/minimal/` - Simplest possible example
-- `examples/relay_control/` - 4-channel relay controller
-- `examples/sensor_station/` - Multi-sensor weather station
-- `widget_test/` - Full widget test with LED control
-
-## Troubleshooting
-
-### WiFi won't connect
-- Check SSID and password
-- Ensure 2.4GHz network (ESP doesn't support 5GHz)
-
-### MQTT won't connect
-- Verify server IP is reachable
-- Check device ID and token match dashboard
-- Ensure EMQX is running on port 1883
-
-### Commands not received
-- Verify channel numbers match between dashboard and code
-- Check `LEGOWO_WRITE()` macro is defined before `setup()`
-- Enable debug: `legowo.setDebug(true)`
-
-### Values not updating
-- Call `legowo.run()` in every `loop()` iteration
-- Check `legowo.write()` is being called with correct channel
-
-## License
-
-MIT License - Free to use in personal and commercial projects.
+MIT

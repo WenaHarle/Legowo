@@ -1,0 +1,28 @@
+name: Rilis ZIP
+
+# Setiap tag v1.2.3 menghasilkan Legowo-1.2.3.zip di halaman Releases,
+# siap dipasang lewat Arduino IDE: Sketch > Include Library > Add .ZIP Library.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cek versi library.properties sama dengan tag
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          grep -q "^version=$v$" library.properties || { echo "library.properties bukan versi $v"; exit 1; }
+      - name: Buat ZIP
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          git archive --format=zip --prefix=Legowo/ -o "Legowo-$v.zip" HEAD -- src examples library.properties library.json keywords.txt LICENSE README.md
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: Legowo-*.zip
+          generate_release_notes: true

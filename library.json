@@ -1,22 +1,18 @@
 {
   "name": "Legowo",
   "version": "1.0.0",
-  "description": "Blynk-like IoT library for Legowo platform",
-  "keywords": ["iot", "mqtt", "esp32", "esp8266", "dashboard"],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-repo/legowo"
-  },
-  "authors": [
-    {
-      "name": "Legowo Team"
-    }
-  ],
+  "description": "Hubungkan ESP32 ke platform IoT Legowo: dashboard, kontrol jarak jauh, dan update firmware OTA.",
+  "keywords": ["iot", "mqtt", "esp32", "esp8266", "dashboard", "ota", "legowo"],
+  "repository": { "type": "git", "url": "https://github.com/WenaHarle/Legowo.git" },
+  "authors": [{ "name": "Made Wena Harilegawa", "email": "wenahari@gmail.com", "maintainer": true }],
   "license": "MIT",
+  "homepage": "https://github.com/WenaHarle/Legowo",
   "frameworks": ["arduino"],
   "platforms": ["espressif32", "espressif8266"],
-  "dependencies": {
-    "PubSubClient": "^2.8",
-    "ArduinoJson": "^7.0"
-  }
+  "dependencies": [
+    { "owner": "bblanchon", "name": "ArduinoJson", "version": "^7.0.0" },
+    { "owner": "knolleary", "name": "PubSubClient", "version": "^2.8", "platforms": ["espressif8266"] }
+  ],
+  "headers": ["Legowo.h"],
+  "export": { "exclude": [".github", "docs/*.png"] }
 }
