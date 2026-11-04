@@ -233,7 +233,8 @@ void finish() {
 }
 
 void download() {
-  WiFiClient* stream = s_http->getStreamPtr();
+  // Core 2.x: WiFiClient*, core 3.x: NetworkClient*.
+  auto* stream = s_http->getStreamPtr();
   unsigned long start = millis();
   // Proses bertahap (maks ~30 ms per panggilan run()) agar loop tidak macet.
   while (s_written < s_req.size && millis() - start < 30) {
