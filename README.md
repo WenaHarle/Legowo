@@ -176,4 +176,4 @@ OTA belum didukung di ESP8266.
 
 ## Lisensi
 
-MIT
+[MIT](LICENSE) © 2026 Made Wena Harilegawa
