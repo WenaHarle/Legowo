@@ -84,20 +84,56 @@ switch/slider menampilkan keadaan sebenarnya di perangkat.
 ## Update firmware (OTA)
 
 OTA sudah termasuk dan mengarah ke server Legowo (perintah lewat `lmqtt.madewena.com`, unduhan
-lewat `https://ldev.madewena.com`). Alurnya:
+lewat `https://ldev.madewena.com`). Upload pertama tetap lewat kabel USB; setelah itu sketch bisa
+diperbarui tanpa kabel.
 
-1. Naikkan `LEGOWO_FW_VERSION`, lalu *Sketch → Export Compiled Binary*.
-2. Admin meng-upload `.bin` di web admin (*Firmware*), memilih board yang sama (mis. `esp32`), lalu
-   merilis atau menjalankan rollout bertahap.
-3. Perangkat mengunduh lewat HTTPS dengan device key, memeriksa **ukuran, SHA-256, dan tanda tangan**
-   (jika `LEGOWO_OTA_PUBKEY` diisi), menulis ke slot OTA kedua, lalu restart.
-4. Firmware baru dianggap sehat setelah berhasil terhubung lagi ke server. Jika tidak terhubung dalam
+**Memasang sketch Anda sendiri**
+
+1. Naikkan `LEGOWO_FW_VERSION` di sketch (mis. `"1.0.0"` → `"1.0.1"`).
+2. Arduino IDE: *Sketch → Export Compiled Binary*. Buka folder sketch (`build/...`) dan ambil
+   **`NamaSketch.ino.bin`**. Jangan pakai `.bootloader.bin`, `.partitions.bin`, atau `.merged.bin`;
+   server menolak file itu karena perangkat tidak bisa boot jika memasangnya.
+3. Di web app, buka perangkat → tab **Firmware** → **Firmware saya** → **Upload firmware**. Isi versi
+   yang sama dengan `LEGOWO_FW_VERSION`, pilih file, centang *Langsung pasang ke perangkat ini*.
+
+Firmware ini hanya terlihat oleh Anda dan hanya bisa dipasang ke perangkat Anda sendiri. Pastikan
+sketch baru tetap memakai Legowo dengan OTA aktif; jika tidak, update berikutnya harus lewat USB lagi.
+
+**Firmware resmi dari admin**
+
+Admin bisa meng-upload firmware resmi untuk satu board (mis. `esp32`) lalu merilisnya atau menjalankan
+rollout bertahap. Firmware resmi yang lebih baru muncul sebagai tombol *Update* di tab **Firmware**.
+
+**Yang terjadi di perangkat**
+
+1. Perangkat menerima perintah OTA, mengunduh lewat HTTPS dengan device key, lalu memeriksa
+   **ukuran, SHA-256, dan tanda tangan** (jika `LEGOWO_OTA_PUBKEY` diisi).
+2. Firmware ditulis ke slot OTA kedua, lalu perangkat restart.
+3. Firmware baru dianggap sehat setelah berhasil terhubung lagi ke server. Jika tidak terhubung dalam
    5 menit atau restart berulang, perangkat **kembali otomatis ke firmware sebelumnya** dan melapor
    `rolled_back`.
 
 Aturan keamanan: hanya versi **lebih baru** yang dipasang (anti-rollback), dan hanya URL dari
-`LEGOWO_OTA_HOST` yang diterima. Untuk produksi, aktifkan tanda tangan firmware: buat kunci di mesin build
-(`scripts/ota-sign.sh` di repo server), isi `LEGOWO_OTA_PUBKEY` di sketch dan `OTA_PUBLIC_KEY` di server.
+`LEGOWO_OTA_HOST` yang diterima.
+
+**Tanda tangan (opsional).** Agar perangkat hanya mau memasang firmware yang Anda tanda tangani,
+buat pasangan kunci ECDSA P-256 sekali di komputer Anda (butuh `openssl`):
+
+```bash
+openssl ecparam -name prime256v1 -genkey -noout -out ota_private.pem   # RAHASIA, jangan dibagikan
+openssl ec -in ota_private.pem -pubout -out ota_public.pem
+```
+
+Salin isi `ota_public.pem` ke sketch sebagai `LEGOWO_OTA_PUBKEY` (setiap baris diakhiri `\n`, lihat
+contoh `OTA_Update`). Untuk setiap `.bin`, buat tanda tangan lalu tempel di kolom *Tanda tangan*
+saat upload:
+
+```bash
+openssl dgst -sha256 -sign ota_private.pem NamaSketch.ino.bin | base64 | tr -d '\n'
+```
+
+Setelah firmware dengan `LEGOWO_OTA_PUBKEY` terpasang, firmware tanpa tanda tangan yang cocok ditolak
+perangkat, termasuk firmware resmi dari admin.
 
 **Partition scheme** harus punya dua slot OTA. Skema default Arduino IDE untuk ESP32 (*Default 4MB with
 spiffs*) sudah cukup. Jika memakai skema tanpa OTA (mis. *Huge APP*), Serial Monitor menampilkan peringatan.
