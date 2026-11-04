@@ -66,6 +66,14 @@ Contoh lengkap ada di *File → Examples → Legowo*: `Basic`, `SwitchSlider`, `
 Nilai yang diterima dari dashboard otomatis dikirim balik sebagai konfirmasi, sehingga widget
 switch/slider menampilkan keadaan sebenarnya di perangkat.
 
+### Live dan tersimpan
+
+Setiap nilai yang dikirim langsung tampil **real-time** di dashboard. Untuk riwayat grafik, server
+menyimpan paling sering satu titik per channel per 10 detik (rata-rata, min, dan maks), atau per
+interval yang dipilih di tab **Pengaturan** perangkat (10 detik sampai 5 menit). Channel kontrol (10+)
+disimpan saat nilainya berubah. Jadi `setInterval()` menentukan seberapa cepat dashboard bergerak,
+bukan seberapa banyak data yang disimpan. Server membatasi 20 pesan/detik per perangkat.
+
 ## API
 
 | Fungsi | Keterangan |
@@ -80,7 +88,7 @@ switch/slider menampilkan keadaan sebenarnya di perangkat.
 | `Legowo.bindSlider(ch, pin, min, max)` | Slider dashboard → PWM pin. |
 | `Legowo.bindSensor(ch, pin, mode)` | Baca pin otomatis: `DIGITAL_NORMAL`, `DIGITAL_INVERTED`, `ANALOG_RAW`, `ANALOG_PERCENT`. |
 | `Legowo.every(ms, fungsi)` | Jalankan fungsi berkala tanpa `delay()` (`Legowo.timer` untuk `setTimeout`/`cancel`). |
-| `Legowo.setInterval(ms)` | Interval kirim telemetri dan baca sensor (default 2000 ms). |
+| `Legowo.setInterval(ms)` | Interval kirim telemetri dan baca sensor (default 2000 ms, minimum 200 ms). Lihat *Live dan tersimpan*. |
 | `Legowo.setDebug(true)` | Log lebih rinci di Serial Monitor. |
 | `Legowo.connected()` / `wifiConnected()` | Status koneksi. |
 | `Legowo.disableOTA()` / `enableOTA()` | OTA **aktif secara default**. |
