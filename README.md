@@ -37,10 +37,14 @@ sudah ditangani library. Server default `lmqtt.madewena.com` sudah tertanam; tid
    https://espressif.github.io/arduino-esp32/package_esp32_index.json
    ```
    Lalu *Tools → Board → Boards Manager* → cari **esp32** (Espressif Systems) → *Install*.
-2. **Pasang library Legowo** dengan salah satu cara:
-   - **Library Manager**: *Tools → Manage Libraries* → cari **Legowo** → *Install* (ArduinoJson ikut terpasang otomatis).
-   - **File ZIP**: unduh `Legowo-x.y.z.zip` dari [Releases](https://github.com/WenaHarle/Legowo/releases) →
-     *Sketch → Include Library → Add .ZIP Library*.
+2. **Pasang library Legowo** (sekali saja):
+   1. Unduh `Legowo-x.y.z.zip` dari [Releases](https://github.com/WenaHarle/Legowo/releases/latest)
+      (jangan diekstrak).
+   2. Arduino IDE → *Sketch → Include Library → Add .ZIP Library* → pilih file ZIP tadi.
+   3. Pasang dependensinya: *Tools → Manage Libraries* → cari **ArduinoJson** (Benoit Blanchon) → *Install*.
+
+   > Legowo sedang didaftarkan ke Arduino Library Manager. Setelah terdaftar, cukup *Tools → Manage
+   > Libraries* → cari **Legowo** → *Install* (ArduinoJson ikut terpasang otomatis).
 3. **Buat perangkat** di dashboard Legowo → *Perangkat → Tambah perangkat*. Salin kode yang muncul
    (device key hanya ditampilkan sekali).
 4. **Tempel** kode ke Arduino IDE, isi nama dan password Wi-Fi (2.4 GHz).
