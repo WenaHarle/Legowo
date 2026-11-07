@@ -10,11 +10,14 @@
  *   void loop() {
  *     Legowo.run();                                     // non-blocking
  *   }
- *   LEGOWO_WRITE(10) {                                  // channel 10+: kontrol dari dashboard
+ *   LEGOWO_WRITE(10) {                                  // terima kontrol dari dashboard
  *     digitalWrite(2, param.asInt());
  *   }
  *
- * Channel 0-9 untuk data sensor ke dashboard (Legowo.write), 10 ke atas untuk kontrol.
+ * Nomor channel bebas (0 s/d LEGOWO_MAX_CHANNELS-1). Peran channel TIDAK ditentukan oleh nomornya,
+ * melainkan oleh cara Anda memakainya: Legowo.write(ch, nilai) mengirim data sensor ke dashboard,
+ * sedangkan LEGOWO_WRITE(ch){...} (atau onReceive/bindSwitch/bindSlider) menerima kontrol dari
+ * dashboard. Library otomatis memberi tahu server channel mana yang berperan kontrol.
  * Koneksi Wi-Fi/MQTT, TLS, reconnect, dan OTA ditangani library.
  */
 #pragma once
@@ -155,6 +158,7 @@ class LegowoClass {
   void _handleMqtt(unsigned long now);
   void _flushTelemetry();
   void _sendStatus();
+  bool _isSliderChannel(int channel) const;
   void _applyCommand(int channel, float value);
   void _pollSensors();
 

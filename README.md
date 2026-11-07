@@ -86,19 +86,24 @@ Contoh lengkap ada di *File → Examples → Legowo*: `Basic`, `SwitchSlider`, `
 
 ## Channel
 
-| Channel | Arah | Contoh |
-|---|---|---|
-| 0–9 | perangkat → dashboard (sensor) | `Legowo.write(0, suhu);` |
-| 10–31 | dashboard → perangkat (kontrol) | `LEGOWO_WRITE(10) { ... }` |
+Nomor channel **bebas** (0 sampai 31). Peran channel **tidak** ditentukan oleh nomornya, melainkan
+oleh cara Anda memakainya:
 
-Nilai yang diterima dari dashboard otomatis dikirim balik sebagai konfirmasi, sehingga widget
-switch/slider menampilkan keadaan sebenarnya di perangkat.
+| Cara pakai | Arah | Peran | Contoh |
+|---|---|---|---|
+| `Legowo.write(ch, nilai)` / `bindSensor` | perangkat → dashboard | sensor | `Legowo.write(3, suhu);` |
+| `LEGOWO_WRITE(ch){...}` / `onReceive` / `bindSwitch` / `bindSlider` | dashboard → perangkat | kontrol | `LEGOWO_WRITE(3) { ... }` |
+
+Library otomatis memberi tahu server channel mana yang berperan kontrol (lewat pesan status), jadi
+server tahu cara menyimpan histori tiap channel tanpa bergantung pada nomornya. Nilai yang diterima
+dari dashboard otomatis dikirim balik sebagai konfirmasi, sehingga widget switch/slider menampilkan
+keadaan sebenarnya di perangkat.
 
 ### Live dan tersimpan
 
 Setiap nilai yang dikirim langsung tampil **real-time** di dashboard. Untuk riwayat grafik, server
 menyimpan paling sering satu titik per channel per 10 detik (rata-rata, min, dan maks), atau per
-interval yang dipilih di tab **Pengaturan** perangkat (10 detik sampai 5 menit). Channel kontrol (10+)
+interval yang dipilih di tab **Pengaturan** perangkat (10 detik sampai 5 menit). Channel kontrol
 disimpan saat nilainya berubah. Jadi `setInterval()` menentukan seberapa cepat dashboard bergerak,
 bukan seberapa banyak data yang disimpan. Server membatasi 20 pesan/detik per perangkat.
 

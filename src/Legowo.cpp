@@ -22,7 +22,7 @@
 #error "Library Legowo hanya mendukung ESP32 dan ESP8266."
 #endif
 
-#define LEGOWO_LIB_VERSION "1.0.0"
+#define LEGOWO_LIB_VERSION "1.1.0"
 
 LegowoClass Legowo;
 
@@ -445,9 +445,21 @@ void LegowoClass::_sendStatus() {
   doc["rssi"] = WiFi.RSSI();
   doc["heap"] = ESP.getFreeHeap();
   doc["uptime"] = millis() / 1000;
-  char buf[256];
+  // Deklarasikan channel yang berperan kontrol: punya handler (LEGOWO_WRITE/onReceive) atau
+  // binding switch/slider. Server memakai ini untuk menyimpan histori channel kontrol saat
+  // nilainya berubah, dan sensor sebagai rata-rata per jendela. Nomor channel tidak menentukan peran.
+  JsonArray control = doc["control"].to<JsonArray>();
+  for (int i = 0; i < LEGOWO_MAX_CHANNELS; i++) {
+    if (_handlers[i] || _switches[i].active || _isSliderChannel(i)) control.add(i);
+  }
+  char buf[512];
   serializeJson(doc, buf, sizeof(buf));
   _publish("status", buf, 1);
+}
+
+bool LegowoClass::_isSliderChannel(int ch) const {
+  for (int i = 0; i < _numSliders; i++) if (_sliders[i].channel == ch) return true;
+  return false;
 }
 
 void LegowoClass::_flushTelemetry() {

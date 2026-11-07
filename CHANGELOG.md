@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.0
+
+- **Peran channel tidak lagi ditentukan oleh nomornya.** Nomor channel bebas (0–31); gunakan
+  `Legowo.write(ch, ...)` untuk sensor dan `LEGOWO_WRITE(ch)`/`onReceive`/`bindSwitch`/`bindSlider`
+  untuk kontrol. Library mendeklarasikan daftar channel kontrol ke server lewat pesan status, jadi
+  server menyimpan histori tiap channel sesuai perannya tanpa bergantung pada nomor (sebelumnya
+  0–9 = sensor, 10+ = kontrol).
+- Dokumentasi dan contoh diperbarui mengikuti perubahan ini. Tidak ada perubahan API; sketch lama
+  tetap jalan.
+
 ## 1.0.0
 
 Rilis pertama library Legowo.
