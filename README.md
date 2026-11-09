@@ -204,6 +204,7 @@ Tulis `#define` **sebelum** `#include <Legowo.h>`:
 | `Format DEVICE_KEY salah` | Salin ulang device key dari dashboard (format `<id>:<64 karakter>`). |
 | `Wi-Fi "X" tidak ditemukan` | Periksa nama Wi-Fi; ESP32 hanya mendukung 2.4 GHz. |
 | `Tidak bisa masuk ke Wi-Fi` | Periksa password Wi-Fi. |
+| `Tidak bisa terhubung ke ...` / `getaddrinfo() returns 202` | Perangkat dapat IP tapi DNS jaringan gagal me-resolve nama host. Sejak v1.1.1 library otomatis memakai fallback DNS publik; jika masih gagal, jaringan memblokir DNS keluar — coba Wi-Fi/hotspot lain. |
 | `Device key ditolak server` | Key salah, sudah di-rotate, atau dicabut. Buat key baru di tab *Pengaturan* perangkat. |
 | `Sertifikat server tidak valid` | Pastikan jam bisa sinkron (internet ke NTP) dan `LEGOWO_CA_CERT` tidak diubah. |
 | `partition scheme tanpa slot OTA` | Pilih partition scheme dengan OTA di menu *Tools*. |

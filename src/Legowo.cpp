@@ -5,6 +5,8 @@
 #include <stdarg.h>
 #include <sys/time.h>
 #include <time.h>
+#include <lwip/dns.h>
+#include <lwip/ip_addr.h>
 
 #include "LegowoOTA.h"
 
@@ -22,7 +24,7 @@
 #error "Library Legowo hanya mendukung ESP32 dan ESP8266."
 #endif
 
-#define LEGOWO_LIB_VERSION "1.1.0"
+#define LEGOWO_LIB_VERSION "1.1.1"
 
 LegowoClass Legowo;
 
@@ -241,6 +243,12 @@ void LegowoClass::_handleWiFi(unsigned long now) {
       _wifiUp = true;
       _wifiBackoff = 10000;
       _logf("Wi-Fi terhubung, IP %s, sinyal %d dBm", WiFi.localIP().toString().c_str(), (int)WiFi.RSSI());
+      // Fallback DNS publik: banyak hotspot/jaringan memberi DNS yang tidak berfungsi untuk
+      // perangkat IoT (getaddrinfo gagal). DNS dari DHCP tetap jadi utama (index 0); 8.8.8.8 dan
+      // 1.1.1.1 dipakai bila yang utama gagal, sehingga NTP dan broker tetap bisa di-resolve.
+      ip_addr_t fallbackDns;
+      if (ipaddr_aton("8.8.8.8", &fallbackDns)) dns_setserver(1, &fallbackDns);
+      if (ipaddr_aton("1.1.1.1", &fallbackDns)) dns_setserver(2, &fallbackDns);
       if (!_timeRequested) {
         configTime(0, 0, "pool.ntp.org", "time.google.com", "time.cloudflare.com");
         _timeRequested = true;

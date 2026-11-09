@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1
+
+- **Fallback DNS publik** (8.8.8.8 dan 1.1.1.1) dipasang otomatis setelah Wi-Fi tersambung. DNS dari
+  jaringan tetap jadi utama; fallback dipakai bila yang utama gagal. Memperbaiki kasus perangkat dapat
+  IP tapi gagal me-resolve nama host (`getaddrinfo() returns 202`) di hotspot/jaringan dengan DNS
+  bermasalah, sehingga NTP dan broker MQTT tetap bisa dijangkau.
+
 ## 1.1.0
 
 - **Peran channel tidak lagi ditentukan oleh nomornya.** Nomor channel bebas (0–31); gunakan
