@@ -6,6 +6,8 @@
   jaringan tetap jadi utama; fallback dipakai bila yang utama gagal. Memperbaiki kasus perangkat dapat
   IP tapi gagal me-resolve nama host (`getaddrinfo() returns 202`) di hotspot/jaringan dengan DNS
   bermasalah, sehingga NTP dan broker MQTT tetap bisa dijangkau.
+- Contoh baru **SendReceive**: mengirim data dummy (penghitung, gelombang, acak) ke dashboard dan
+  menampilkan nilai yang diterima dari dashboard di Serial Monitor, tanpa perlu perangkat keras.
 
 ## 1.1.0
 
