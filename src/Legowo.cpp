@@ -24,7 +24,7 @@
 #error "Library Legowo hanya mendukung ESP32 dan ESP8266."
 #endif
 
-#define LEGOWO_LIB_VERSION "1.1.1"
+#define LEGOWO_LIB_VERSION "1.1.2"
 
 LegowoClass Legowo;
 
@@ -451,6 +451,7 @@ void LegowoClass::_sendStatus() {
   doc["chip"] = "ESP8266";
 #endif
   doc["rssi"] = WiFi.RSSI();
+  doc["ip"] = WiFi.localIP().toString();
   doc["heap"] = ESP.getFreeHeap();
   doc["uptime"] = millis() / 1000;
   // Deklarasikan channel yang berperan kontrol: punya handler (LEGOWO_WRITE/onReceive) atau

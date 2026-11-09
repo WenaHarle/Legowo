@@ -1,6 +1,6 @@
 {
   "name": "Legowo",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Hubungkan ESP32 ke platform IoT Legowo: dashboard, kontrol jarak jauh, dan update firmware OTA.",
   "keywords": ["iot", "mqtt", "esp32", "esp8266", "dashboard", "ota", "legowo"],
   "repository": { "type": "git", "url": "https://github.com/WenaHarle/Legowo.git" },

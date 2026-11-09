@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2
+
+- Pesan status kini menyertakan **alamat IP** perangkat (selain RSSI yang sudah ada), sehingga
+  dashboard bisa menampilkan IP dan kekuatan sinyal Wi-Fi di bagian status perangkat.
+
 ## 1.1.1
 
 - **Fallback DNS publik** (8.8.8.8 dan 1.1.1.1) dipasang otomatis setelah Wi-Fi tersambung. DNS dari
