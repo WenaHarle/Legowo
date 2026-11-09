@@ -5,217 +5,220 @@
   </picture>
 </p>
 
-# Legowo untuk Arduino
+# Legowo for Arduino
 
-Library Arduino untuk menghubungkan **ESP32** ke platform IoT **Legowo**: kirim data sensor ke
-dashboard, kendalikan pin dari dashboard, dan terima update firmware (OTA) dari server.
+**Language:** **English** · [Indonesia](README.id.md)
+
+Arduino library that connects an **ESP32** to the **Legowo** IoT platform: send sensor data to the
+dashboard, control pins from the dashboard, and receive over-the-air (OTA) firmware updates from the
+server.
 
 ```cpp
 #define LEGOWO_FW_VERSION "1.0.0"
 #include <Legowo.h>
 
 void setup() {
-  Legowo.begin("NAMA_WIFI", "PASSWORD_WIFI", "DEVICE_KEY");   // key dari dashboard
+  Legowo.begin("WIFI_NAME", "WIFI_PASSWORD", "DEVICE_KEY");   // key from the dashboard
 }
 
 void loop() {
-  Legowo.run();                                               // tanpa delay()
+  Legowo.run();                                               // no delay()
 }
 
-LEGOWO_RECEIVE(10) {                                          // terima nilai dari dashboard -> channel 10
+LEGOWO_RECEIVE(10) {                                          // receive a value from the dashboard -> channel 10
   digitalWrite(2, param.asInt());
 }
 ```
 
-Koneksi Wi-Fi, MQTT over WebSocket + TLS (sertifikat diverifikasi), reconnect otomatis, dan OTA
-sudah ditangani library. Server default `lmqtt.madewena.com` sudah tertanam; tidak perlu mengatur apa pun.
+Wi-Fi, MQTT over WebSocket + TLS (certificate verified), automatic reconnect, and OTA are all handled
+by the library. The default server `lmqtt.madewena.com` is built in; there is nothing to configure.
 
-## Tampilan aplikasi
+## What the app looks like
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dashboard-dark.png">
-  <img src="docs/screenshots/dashboard.png" alt="Dashboard Legowo dengan widget nilai, gauge, switch, status, slider, grafik, dan tabel">
+  <img src="docs/screenshots/dashboard.png" alt="Legowo dashboard with value, gauge, switch, status, slider, chart, and table widgets">
 </picture>
 
-Dashboard dengan semua jenis widget: **nilai** (suhu, cahaya), **gauge** (kelembapan), **switch**
-(lampu, channel 10), **status** perangkat, **slider** (PWM, channel 11), **grafik** riwayat, dan
-**tabel** nilai terbaru. Nilai bergerak real-time; widget disusun bebas dengan mode *Edit*.
+A dashboard with every widget type: **value** (temperature, light), **gauge** (humidity), **switch**
+(light, channel 10), device **status**, **slider** (PWM, channel 11), history **chart**, and a
+**table** of the latest values. Values update in real time; widgets are arranged freely in *Edit* mode.
 
 <table>
   <tr>
-    <td width="62%"><img src="docs/screenshots/new-device.png" alt="Tambah perangkat: device key dan kode Arduino siap salin"></td>
-    <td rowspan="2"><img src="docs/screenshots/mobile.png" alt="Dashboard di ponsel"></td>
+    <td width="62%"><img src="docs/screenshots/new-device.png" alt="Add device: device key and ready-to-copy Arduino code"></td>
+    <td rowspan="2"><img src="docs/screenshots/mobile.png" alt="Dashboard on a phone"></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/device-data.png" alt="Detail perangkat: grafik dan data tersimpan"></td>
+    <td><img src="docs/screenshots/device-data.png" alt="Device detail: chart and stored data"></td>
   </tr>
   <tr>
-    <td>Atas: <b>Tambah perangkat</b> langsung memberi kode Arduino siap salin. Bawah: tab <b>Data</b>
-    perangkat (grafik dan nilai tersimpan).</td>
-    <td>Tampilan ponsel.</td>
+    <td>Top: <b>Add device</b> immediately gives you ready-to-copy Arduino code. Bottom: the device
+    <b>Data</b> tab (chart and stored values).</td>
+    <td>Phone view.</td>
   </tr>
 </table>
 
-<sub>Gambar memakai data demo; device key di gambar sudah tidak berlaku.</sub>
+<sub>Images use demo data; the device key shown is no longer valid.</sub>
 
-## Mulai dalam 5 menit
+## Get started in 5 minutes
 
-1. **Pasang board ESP32** (sekali saja). Arduino IDE → *File → Preferences → Additional boards manager URLs*, isi:
+1. **Install the ESP32 board** (once). Arduino IDE → *File → Preferences → Additional boards manager URLs*, add:
    ```
    https://espressif.github.io/arduino-esp32/package_esp32_index.json
    ```
-   Lalu *Tools → Board → Boards Manager* → cari **esp32** (Espressif Systems) → *Install*.
-2. **Pasang library Legowo** (sekali saja):
-   1. Unduh `Legowo-x.y.z.zip` dari [Releases](https://github.com/WenaHarle/Legowo/releases/latest)
-      (jangan diekstrak).
-   2. Arduino IDE → *Sketch → Include Library → Add .ZIP Library* → pilih file ZIP tadi.
-   3. Pasang dependensinya: *Tools → Manage Libraries* → cari **ArduinoJson** (Benoit Blanchon) → *Install*.
+   Then *Tools → Board → Boards Manager* → search **esp32** (Espressif Systems) → *Install*.
+2. **Install the Legowo library** (once):
+   1. Download `Legowo-x.y.z.zip` from [Releases](https://github.com/WenaHarle/Legowo/releases/latest)
+      (do not extract it).
+   2. Arduino IDE → *Sketch → Include Library → Add .ZIP Library* → pick that ZIP file.
+   3. Install its dependency: *Tools → Manage Libraries* → search **ArduinoJson** (Benoit Blanchon) → *Install*.
 
-   > Legowo sedang didaftarkan ke Arduino Library Manager. Setelah terdaftar, cukup *Tools → Manage
-   > Libraries* → cari **Legowo** → *Install* (ArduinoJson ikut terpasang otomatis).
-3. **Buat perangkat** di dashboard Legowo → *Perangkat → Tambah perangkat*. Salin kode yang muncul
-   (device key hanya ditampilkan sekali).
-4. **Tempel** kode ke Arduino IDE, isi nama dan password Wi-Fi (2.4 GHz).
-5. Pilih board (mis. *ESP32 Dev Module*) dan port, lalu **Upload**. Buka *Serial Monitor* (115200):
+   > Legowo is in the process of being listed in the Arduino Library Manager. Once listed, just
+   > *Tools → Manage Libraries* → search **Legowo** → *Install* (ArduinoJson is installed automatically).
+3. **Create a device** in the Legowo dashboard → *Devices → Add device*. Copy the code it shows (the
+   device key is displayed only once).
+4. **Paste** the code into the Arduino IDE and fill in your Wi-Fi name and password (2.4 GHz).
+5. Select your board (e.g. *ESP32 Dev Module*) and port, then **Upload**. Open the *Serial Monitor* (115200):
    ```
-   [Legowo] Wi-Fi terhubung, IP 192.168.1.23, sinyal -54 dBm
-   [Legowo] Terhubung ke server Legowo. Device ID 3f2a...
+   [Legowo] Wi-Fi connected, IP 192.168.1.23, signal -54 dBm
+   [Legowo] Connected to the Legowo server. Device ID 3f2a...
    ```
 
-Contoh lengkap ada di *File → Examples → Legowo*: `Basic`, `SwitchSlider`, `DHT_Sensor`, `RGB_LED`, `OTA_Update`.
+Full examples are under *File → Examples → Legowo*: `Basic`, `SwitchSlider`, `DHT_Sensor`, `RGB_LED`, `OTA_Update`, `SendReceive`.
 
-## Channel
+## Channels
 
-Nomor channel **bebas** (0 sampai 31). Peran channel **tidak** ditentukan oleh nomornya, melainkan
-oleh cara Anda memakainya:
+Channel numbers are **free** (0 to 31). A channel's role is **not** decided by its number, but by how
+you use it:
 
-| Cara pakai | Arah | Peran | Contoh |
+| Usage | Direction | Role | Example |
 |---|---|---|---|
-| `Legowo.write(ch, nilai)` / `bindSensor` | perangkat → dashboard | sensor | `Legowo.write(3, suhu);` |
-| `LEGOWO_RECEIVE(ch){...}` / `onReceive` / `bindSwitch` / `bindSlider` | dashboard → perangkat | kontrol | `LEGOWO_RECEIVE(3) { ... }` |
+| `Legowo.write(ch, value)` / `bindSensor` | device → dashboard | sensor | `Legowo.write(3, temperature);` |
+| `LEGOWO_RECEIVE(ch){...}` / `onReceive` / `bindSwitch` / `bindSlider` | dashboard → device | control | `LEGOWO_RECEIVE(3) { ... }` |
 
-Library otomatis memberi tahu server channel mana yang berperan kontrol (lewat pesan status), jadi
-server tahu cara menyimpan histori tiap channel tanpa bergantung pada nomornya. Nilai yang diterima
-dari dashboard otomatis dikirim balik sebagai konfirmasi, sehingga widget switch/slider menampilkan
-keadaan sebenarnya di perangkat.
+The library automatically tells the server which channels act as controls (via the status message), so
+the server knows how to store each channel's history without depending on its number. A value received
+from the dashboard is automatically echoed back as a confirmation, so switch/slider widgets reflect the
+real state on the device.
 
-### Live dan tersimpan
+### Live and stored
 
-Setiap nilai yang dikirim langsung tampil **real-time** di dashboard. Untuk riwayat grafik, server
-menyimpan paling sering satu titik per channel per 10 detik (rata-rata, min, dan maks), atau per
-interval yang dipilih di tab **Pengaturan** perangkat (10 detik sampai 5 menit). Channel kontrol
-disimpan saat nilainya berubah. Jadi `setInterval()` menentukan seberapa cepat dashboard bergerak,
-bukan seberapa banyak data yang disimpan. Server membatasi 20 pesan/detik per perangkat.
+Every value you send appears **live** on the dashboard immediately. For chart history, the server stores
+at most one point per channel per 10 seconds (average, min, and max), or per the interval chosen in the
+device's **Settings** tab (10 seconds to 5 minutes). Control channels are stored whenever their value
+changes. So `setInterval()` controls how fast the dashboard moves, not how much data is stored. The
+server limits each device to 20 messages/second.
 
 ## API
 
-| Fungsi | Keterangan |
+| Function | Description |
 |---|---|
-| `Legowo.begin(ssid, pass, deviceKey)` | Mulai Wi-Fi + koneksi server (tidak memblokir). |
-| `Legowo.run()` | Panggil terus di `loop()`. |
-| `Legowo.write(ch, nilai)` | Kirim nilai ke dashboard (dikelompokkan tiap interval). |
-| `Legowo.read(ch)` | Nilai terakhir channel. |
-| `LEGOWO_RECEIVE(ch) { ... }` | Handler saat dashboard mengirim nilai; `param.asInt()`, `asFloat()`, `asBool()`. (`LEGOWO_WRITE` = nama lama yang masih didukung.) |
-| `Legowo.onReceive(ch, fungsi)` | Sama seperti `LEGOWO_RECEIVE`, didaftarkan saat runtime. |
-| `Legowo.bindSwitch(ch, pin, activeLow=false)` | Switch dashboard langsung mengendalikan pin. |
-| `Legowo.bindSlider(ch, pin, min, max)` | Slider dashboard → PWM pin. |
-| `Legowo.bindSensor(ch, pin, mode)` | Baca pin otomatis: `DIGITAL_NORMAL`, `DIGITAL_INVERTED`, `ANALOG_RAW`, `ANALOG_PERCENT`. |
-| `Legowo.every(ms, fungsi)` | Jalankan fungsi berkala tanpa `delay()` (`Legowo.timer` untuk `setTimeout`/`cancel`). |
-| `Legowo.setInterval(ms)` | Interval kirim telemetri dan baca sensor (default 2000 ms, minimum 200 ms). Lihat *Live dan tersimpan*. |
-| `Legowo.setDebug(true)` | Log lebih rinci di Serial Monitor. |
-| `Legowo.connected()` / `wifiConnected()` | Status koneksi. |
-| `Legowo.disableOTA()` / `enableOTA()` | OTA **aktif secara default**. |
+| `Legowo.begin(ssid, pass, deviceKey)` | Start Wi-Fi + server connection (non-blocking). |
+| `Legowo.run()` | Call continuously in `loop()`. |
+| `Legowo.write(ch, value)` | Send a value to the dashboard (batched per interval). |
+| `Legowo.read(ch)` | Last value of a channel. |
+| `LEGOWO_RECEIVE(ch) { ... }` | Handler for when the dashboard sends a value; `param.asInt()`, `asFloat()`, `asBool()`. (`LEGOWO_WRITE` is the old name, still supported.) |
+| `Legowo.onReceive(ch, fn)` | Same as `LEGOWO_RECEIVE`, registered at runtime. |
+| `Legowo.bindSwitch(ch, pin, activeLow=false)` | A dashboard switch drives the pin directly. |
+| `Legowo.bindSlider(ch, pin, min, max)` | A dashboard slider → PWM pin. |
+| `Legowo.bindSensor(ch, pin, mode)` | Read a pin automatically: `DIGITAL_NORMAL`, `DIGITAL_INVERTED`, `ANALOG_RAW`, `ANALOG_PERCENT`. |
+| `Legowo.every(ms, fn)` | Run a function periodically without `delay()` (`Legowo.timer` for `setTimeout`/`cancel`). |
+| `Legowo.setInterval(ms)` | Telemetry send + sensor read interval (default 2000 ms, minimum 200 ms). See *Live and stored*. |
+| `Legowo.setDebug(true)` | More detailed logs in the Serial Monitor. |
+| `Legowo.connected()` / `wifiConnected()` | Connection status. |
+| `Legowo.disableOTA()` / `enableOTA()` | OTA is **enabled by default**. |
 
-## Update firmware (OTA)
+## Firmware update (OTA)
 
-OTA sudah termasuk dan mengarah ke server Legowo (perintah lewat `lmqtt.madewena.com`, unduhan
-lewat `https://ldev.madewena.com`). Upload pertama tetap lewat kabel USB; setelah itu sketch bisa
-diperbarui tanpa kabel.
+OTA is included and points at the Legowo server (commands via `lmqtt.madewena.com`, downloads via
+`https://ldev.madewena.com`). The first upload is still over USB; after that the sketch can be updated
+without a cable.
 
-**Memasang sketch Anda sendiri**
+**Installing your own sketch**
 
-1. Naikkan `LEGOWO_FW_VERSION` di sketch (mis. `"1.0.0"` → `"1.0.1"`).
-2. Arduino IDE: *Sketch → Export Compiled Binary*. Buka folder sketch (`build/...`) dan ambil
-   **`NamaSketch.ino.bin`**. Jangan pakai `.bootloader.bin`, `.partitions.bin`, atau `.merged.bin`;
-   server menolak file itu karena perangkat tidak bisa boot jika memasangnya.
-3. Di web app, buka perangkat → tab **Firmware** → **Firmware saya** → **Upload firmware**. Isi versi
-   yang sama dengan `LEGOWO_FW_VERSION`, pilih file, centang *Langsung pasang ke perangkat ini*.
+1. Bump `LEGOWO_FW_VERSION` in the sketch (e.g. `"1.0.0"` → `"1.0.1"`).
+2. Arduino IDE: *Sketch → Export Compiled Binary*. Open the sketch's `build/...` folder and take
+   **`YourSketch.ino.bin`**. Do not use `.bootloader.bin`, `.partitions.bin`, or `.merged.bin`; the
+   server rejects those because the device cannot boot if it installs them.
+3. In the web app, open the device → **Firmware** tab → **My firmware** → **Upload firmware**. Fill in
+   the same version as `LEGOWO_FW_VERSION`, pick the file, and check *Install on this device now*.
 
-Firmware ini hanya terlihat oleh Anda dan hanya bisa dipasang ke perangkat Anda sendiri. Pastikan
-sketch baru tetap memakai Legowo dengan OTA aktif; jika tidak, update berikutnya harus lewat USB lagi.
+This firmware is visible only to you and can only be installed on your own devices. Make sure the new
+sketch keeps using Legowo with OTA enabled; otherwise the next update has to go over USB again.
 
-**Firmware resmi dari admin**
+**Official firmware from an admin**
 
-Admin bisa meng-upload firmware resmi untuk satu board (mis. `esp32`) lalu merilisnya atau menjalankan
-rollout bertahap. Firmware resmi yang lebih baru muncul sebagai tombol *Update* di tab **Firmware**.
+An admin can upload official firmware for one board (e.g. `esp32`), then release it or run a staged
+rollout. Newer official firmware appears as an *Update* button on the **Firmware** tab.
 
-**Yang terjadi di perangkat**
+**What happens on the device**
 
-1. Perangkat menerima perintah OTA, mengunduh lewat HTTPS dengan device key, lalu memeriksa
-   **ukuran, SHA-256, dan tanda tangan** (jika `LEGOWO_OTA_PUBKEY` diisi).
-2. Firmware ditulis ke slot OTA kedua, lalu perangkat restart.
-3. Firmware baru dianggap sehat setelah berhasil terhubung lagi ke server. Jika tidak terhubung dalam
-   5 menit atau restart berulang, perangkat **kembali otomatis ke firmware sebelumnya** dan melapor
-   `rolled_back`.
+1. The device receives the OTA command, downloads over HTTPS with the device key, then checks the
+   **size, SHA-256, and signature** (if `LEGOWO_OTA_PUBKEY` is set).
+2. The firmware is written to the second OTA slot, then the device restarts.
+3. The new firmware is considered healthy once it reconnects to the server. If it does not connect
+   within 5 minutes or keeps restarting, the device **automatically rolls back to the previous
+   firmware** and reports `rolled_back`.
 
-Aturan keamanan: hanya versi **lebih baru** yang dipasang (anti-rollback), dan hanya URL dari
-`LEGOWO_OTA_HOST` yang diterima.
+Safety rules: only a **newer** version is installed (anti-rollback), and only URLs from
+`LEGOWO_OTA_HOST` are accepted.
 
-**Tanda tangan (opsional).** Agar perangkat hanya mau memasang firmware yang Anda tanda tangani,
-buat pasangan kunci ECDSA P-256 sekali di komputer Anda (butuh `openssl`):
+**Signing (optional).** To make the device install only firmware you have signed, create an ECDSA
+P-256 key pair once on your computer (needs `openssl`):
 
 ```bash
-openssl ecparam -name prime256v1 -genkey -noout -out ota_private.pem   # RAHASIA, jangan dibagikan
+openssl ecparam -name prime256v1 -genkey -noout -out ota_private.pem   # SECRET, never share
 openssl ec -in ota_private.pem -pubout -out ota_public.pem
 ```
 
-Salin isi `ota_public.pem` ke sketch sebagai `LEGOWO_OTA_PUBKEY` (setiap baris diakhiri `\n`, lihat
-contoh `OTA_Update`). Untuk setiap `.bin`, buat tanda tangan lalu tempel di kolom *Tanda tangan*
-saat upload:
+Copy the contents of `ota_public.pem` into the sketch as `LEGOWO_OTA_PUBKEY` (each line ending in `\n`,
+see the `OTA_Update` example). For each `.bin`, create a signature and paste it in the *Signature* field
+when uploading:
 
 ```bash
-openssl dgst -sha256 -sign ota_private.pem NamaSketch.ino.bin | base64 | tr -d '\n'
+openssl dgst -sha256 -sign ota_private.pem YourSketch.ino.bin | base64 | tr -d '\n'
 ```
 
-Setelah firmware dengan `LEGOWO_OTA_PUBKEY` terpasang, firmware tanpa tanda tangan yang cocok ditolak
-perangkat, termasuk firmware resmi dari admin.
+Once firmware with `LEGOWO_OTA_PUBKEY` is installed, firmware without a matching signature is rejected
+by the device, including official firmware from an admin.
 
-**Partition scheme** harus punya dua slot OTA. Skema default Arduino IDE untuk ESP32 (*Default 4MB with
-spiffs*) sudah cukup. Jika memakai skema tanpa OTA (mis. *Huge APP*), Serial Monitor menampilkan peringatan.
+**The partition scheme** must have two OTA slots. The Arduino IDE default for ESP32 (*Default 4MB with
+spiffs*) is enough. If you use a scheme without OTA (e.g. *Huge APP*), the Serial Monitor shows a warning.
 
-## Pengaturan lanjutan
+## Advanced settings
 
-Tulis `#define` **sebelum** `#include <Legowo.h>`:
+Write the `#define`s **before** `#include <Legowo.h>`:
 
 | Define | Default |
 |---|---|
 | `LEGOWO_FW_VERSION` | `"0.0.0"` |
 | `LEGOWO_MQTT_HOST` | `"lmqtt.madewena.com"` (WSS port 443, path `/mqtt`) |
 | `LEGOWO_OTA_HOST` | `"ldev.madewena.com"` |
-| `LEGOWO_OTA_PUBKEY` | `""` (kosong = tanpa verifikasi tanda tangan) |
+| `LEGOWO_OTA_PUBKEY` | `""` (empty = no signature verification) |
 | `LEGOWO_TOPIC_PREFIX` | `"legowo"` |
-| `LEGOWO_CA_CERT` | bundle root CA Let's Encrypt / Google Trust Services / Sectigo / SSL.com |
-| `LEGOWO_BOARD` | otomatis dari chip (`esp32`, `esp32s3`, `esp32c3`, ...) |
+| `LEGOWO_CA_CERT` | Let's Encrypt / Google Trust Services / Sectigo / SSL.com root CA bundle |
+| `LEGOWO_BOARD` | automatic from the chip (`esp32`, `esp32s3`, `esp32c3`, ...) |
 
-## Pesan di Serial Monitor
+## Serial Monitor messages
 
-| Pesan | Yang perlu dilakukan |
+| Message | What to do |
 |---|---|
-| `Format DEVICE_KEY salah` | Salin ulang device key dari dashboard (format `<id>:<64 karakter>`). |
-| `Wi-Fi "X" tidak ditemukan` | Periksa nama Wi-Fi; ESP32 hanya mendukung 2.4 GHz. |
-| `Tidak bisa masuk ke Wi-Fi` | Periksa password Wi-Fi. |
-| `Tidak bisa terhubung ke ...` / `getaddrinfo() returns 202` | Perangkat dapat IP tapi DNS jaringan gagal me-resolve nama host. Sejak v1.1.1 library otomatis memakai fallback DNS publik; jika masih gagal, jaringan memblokir DNS keluar — coba Wi-Fi/hotspot lain. |
-| `Device key ditolak server` | Key salah, sudah di-rotate, atau dicabut. Buat key baru di tab *Pengaturan* perangkat. |
-| `Sertifikat server tidak valid` | Pastikan jam bisa sinkron (internet ke NTP) dan `LEGOWO_CA_CERT` tidak diubah. |
-| `partition scheme tanpa slot OTA` | Pilih partition scheme dengan OTA di menu *Tools*. |
+| `Invalid DEVICE_KEY format` | Re-copy the device key from the dashboard (format `<id>:<64 characters>`). |
+| `Wi-Fi "X" not found` | Check the Wi-Fi name; the ESP32 only supports 2.4 GHz. |
+| `Cannot join Wi-Fi` | Check the Wi-Fi password. |
+| `Cannot connect to ...` / `getaddrinfo() returns 202` | The device got an IP but the network DNS failed to resolve the host name. Since v1.1.1 the library automatically uses a public DNS fallback; if it still fails, the network is blocking outbound DNS — try another Wi-Fi/hotspot. |
+| `Device key rejected by server` | The key is wrong, was rotated, or was revoked. Create a new key in the device's *Settings* tab. |
+| `Invalid server certificate` | Make sure the clock can sync (internet to NTP) and that `LEGOWO_CA_CERT` is unchanged. |
+| `partition scheme without OTA slot` | Pick a partition scheme with OTA in the *Tools* menu. |
 
 ## ESP8266
 
-Didukung secara eksperimental untuk telemetri dan kontrol, lewat MQTT TLS port 8883 ke
-`LEGOWO_MQTT_TLS_HOST`. Server Legowo di `madewena.com` saat ini hanya membuka MQTT lewat WebSocket
-(Cloudflare Tunnel), jadi ESP8266 baru bisa dipakai bila listener 8883 diaktifkan di server.
-OTA belum didukung di ESP8266.
+Experimentally supported for telemetry and control, via MQTT TLS port 8883 to `LEGOWO_MQTT_TLS_HOST`.
+The Legowo server at `madewena.com` currently only exposes MQTT over WebSocket (Cloudflare Tunnel), so
+the ESP8266 can only be used once an 8883 listener is enabled on the server. OTA is not yet supported on
+the ESP8266.
 
-## Lisensi
+## License
 
 [MIT](LICENSE) © 2026 Made Wena Harilegawa

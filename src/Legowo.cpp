@@ -1,4 +1,4 @@
-// Legowo - implementasi inti (Wi-Fi, MQTT, channel, binding, timer).
+// Legowo - core implementation (Wi-Fi, MQTT, channels, bindings, timer).
 #include "Legowo.h"
 
 #include <ArduinoJson.h>
@@ -21,14 +21,14 @@
 #include <PubSubClient.h>
 #include <WiFiClientSecureBearSSL.h>
 #else
-#error "Library Legowo hanya mendukung ESP32 dan ESP8266."
+#error "The Legowo library only supports ESP32 and ESP8266."
 #endif
 
-#define LEGOWO_LIB_VERSION "1.1.3"
+#define LEGOWO_LIB_VERSION "1.1.4"
 
 LegowoClass Legowo;
 
-// Diisi oleh LEGOWO_RECEIVE() saat inisialisasi statis (array POD -> sudah nol sebelum dipakai).
+// Filled by LEGOWO_RECEIVE() during static init (POD array -> already zeroed before use).
 static LegowoHandler s_macroHandlers[LEGOWO_MAX_CHANNELS];
 
 static char s_topicCmd[96];
@@ -75,7 +75,7 @@ void LegowoClass::_errorf(const char* fmt, ...) {
   va_start(ap, fmt);
   vsnprintf(buf, sizeof(buf), fmt, ap);
   va_end(ap);
-  Serial.print("[Legowo] GAGAL: ");
+  Serial.print("[Legowo] FAILED: ");
   Serial.println(buf);
 }
 
@@ -117,7 +117,7 @@ void mqttEvent(void*, esp_event_base_t, int32_t id, void* data) {
       s_evDisconnected = true;
       break;
     case MQTT_EVENT_DATA: {
-      // Pesan Legowo kecil; fragmen (pesan besar) diabaikan.
+      // Legowo messages are small; fragments (large messages) are ignored.
       if (ev->current_data_offset != 0 || ev->data_len != ev->total_data_len) break;
       if (ev->data_len <= 0 || ev->data_len >= (int)sizeof(QMsg::data)) break;
       QMsg m;
@@ -131,7 +131,7 @@ void mqttEvent(void*, esp_event_base_t, int32_t id, void* data) {
       m.len = ev->data_len;
       memcpy(m.data, ev->data, ev->data_len);
       m.data[m.len] = 0;
-      // Handler user dijalankan di loop(), bukan di task MQTT.
+      // User handlers run in loop(), not in the MQTT task.
       xQueueSend(s_queue, &m, 0);
       break;
     }
@@ -178,7 +178,7 @@ bool LegowoClass::_begin(const char* ssid, const char* password, const char* dev
   bool ok = colon && (colon - deviceKey) == 36 && strlen(colon + 1) == 64;
   for (int i = 0; ok && i < 64; i++) ok = isxdigit((unsigned char)colon[1 + i]);
   if (!ok) {
-    _errorf("Format DEVICE_KEY salah. Salin ulang device key dari dashboard Legowo (format <id>:<64 karakter>).");
+    _errorf("Invalid DEVICE_KEY format. Re-copy the device key from the Legowo dashboard (format <id>:<64 characters>).");
     return false;
   }
   memcpy(_deviceId, deviceKey, 36);
@@ -201,14 +201,14 @@ bool LegowoClass::_begin(const char* ssid, const char* password, const char* dev
   legowo_ota::setup(_s, _deviceId, _secret);
 
   if (!ssid || !*ssid) {
-    _errorf("Nama Wi-Fi (SSID) kosong.");
+    _errorf("Wi-Fi name (SSID) is empty.");
     return false;
   }
   WiFi.mode(WIFI_STA);
   WiFi.setAutoReconnect(true);
   WiFi.begin(ssid, password);
   _wifiAttemptAt = millis();
-  _logf("Menghubungkan ke Wi-Fi \"%s\"...", ssid);
+  _logf("Connecting to Wi-Fi \"%s\"...", ssid);
   _started = true;
   return true;
 }
@@ -242,10 +242,10 @@ void LegowoClass::_handleWiFi(unsigned long now) {
     if (!_wifiUp) {
       _wifiUp = true;
       _wifiBackoff = 10000;
-      _logf("Wi-Fi terhubung, IP %s, sinyal %d dBm", WiFi.localIP().toString().c_str(), (int)WiFi.RSSI());
-      // Fallback DNS publik: banyak hotspot/jaringan memberi DNS yang tidak berfungsi untuk
-      // perangkat IoT (getaddrinfo gagal). DNS dari DHCP tetap jadi utama (index 0); 8.8.8.8 dan
-      // 1.1.1.1 dipakai bila yang utama gagal, sehingga NTP dan broker tetap bisa di-resolve.
+      _logf("Wi-Fi connected, IP %s, signal %d dBm", WiFi.localIP().toString().c_str(), (int)WiFi.RSSI());
+      // Public DNS fallback: many hotspots/networks hand out DNS that does not work for IoT
+      // devices (getaddrinfo fails). The DHCP DNS stays primary (index 0); 8.8.8.8 and 1.1.1.1
+      // are used if the primary fails, so NTP and the broker can still be resolved.
       ip_addr_t fallbackDns;
       if (ipaddr_aton("8.8.8.8", &fallbackDns)) dns_setserver(1, &fallbackDns);
       if (ipaddr_aton("1.1.1.1", &fallbackDns)) dns_setserver(2, &fallbackDns);
@@ -259,16 +259,16 @@ void LegowoClass::_handleWiFi(unsigned long now) {
   }
   if (_wifiUp) {
     _wifiUp = false;
-    _logf("Wi-Fi terputus, mencoba menyambung lagi...");
+    _logf("Wi-Fi disconnected, reconnecting...");
     _wifiAttemptAt = now;
   }
   if (now - _wifiAttemptAt < _wifiBackoff) return;
   if (st == WL_NO_SSID_AVAIL) {
-    _errorf("Wi-Fi \"%s\" tidak ditemukan. Periksa nama Wi-Fi dan pastikan jaringan 2.4 GHz.", _ssid);
+    _errorf("Wi-Fi \"%s\" not found. Check the Wi-Fi name and make sure it is a 2.4 GHz network.", _ssid);
   } else if (st == WL_CONNECT_FAILED) {
-    _errorf("Tidak bisa masuk ke Wi-Fi \"%s\". Periksa password Wi-Fi.", _ssid);
+    _errorf("Cannot join Wi-Fi \"%s\". Check the Wi-Fi password.", _ssid);
   } else {
-    _logf("Belum terhubung ke Wi-Fi \"%s\", mencoba lagi...", _ssid);
+    _logf("Not connected to Wi-Fi \"%s\" yet, retrying...", _ssid);
   }
   WiFi.disconnect();
   WiFi.begin(_ssid, _password);
@@ -295,7 +295,7 @@ void LegowoClass::_handleMqtt(unsigned long now) {
   while (s_queue && xQueueReceive(s_queue, &m, 0) == pdTRUE) _onMessage(m.kind, m.data, m.len);
 
   if (!_wifiUp) return;
-  // TLS butuh jam yang benar; tunggu NTP maksimal 15 detik.
+  // TLS needs a correct clock; wait for NTP up to 15 seconds.
   if (!timeValid() && now - _timeRequestedAt < 15000) return;
 
   if (!_mqttStarted) {
@@ -332,12 +332,12 @@ void LegowoClass::_handleMqtt(unsigned long now) {
 #endif
     s_client = esp_mqtt_client_init(&cfg);
     if (!s_client) {
-      _errorf("Tidak bisa membuat klien MQTT (memori tidak cukup?).");
+      _errorf("Cannot create the MQTT client (out of memory?).");
       _mqttRetryAt = now + 10000;
       return;
     }
     esp_mqtt_client_register_event(s_client, MQTT_EVENT_ANY, mqttEvent, nullptr);
-    _logf("Menghubungkan ke server %s ...", _s->mqttHost);
+    _logf("Connecting to the server %s ...", _s->mqttHost);
     esp_mqtt_client_start(s_client);
     _mqttStarted = true;
     _mqttRetryAt = 0;
@@ -345,7 +345,7 @@ void LegowoClass::_handleMqtt(unsigned long now) {
   }
   if (!_mqttUp && _mqttRetryAt && (long)(now - _mqttRetryAt) >= 0) {
     _mqttRetryAt = 0;
-    _logf("Menghubungkan ulang ke server...");
+    _logf("Reconnecting to the server...");
     esp_mqtt_client_reconnect(s_client);
   }
 #elif defined(ESP8266)
@@ -369,7 +369,7 @@ void LegowoClass::_handleMqtt(unsigned long now) {
     s_mqtt->setCallback(mqttCallback);
   }
   if (timeValid()) s_tls->setX509Time(time(nullptr));
-  _logf("Menghubungkan ke server %s:%u ...", _s->mqttTlsHost, (unsigned)_s->mqttTlsPort);
+  _logf("Connecting to the server %s:%u ...", _s->mqttTlsHost, (unsigned)_s->mqttTlsPort);
   if (s_mqtt->connect(_deviceId, _deviceId, _secret, s_topicStatus, 1, false, "{\"online\":false}")) {
     s_mqtt->subscribe(s_topicCmd, 1);
     s_mqtt->subscribe(s_topicOta, 1);
@@ -379,12 +379,12 @@ void LegowoClass::_handleMqtt(unsigned long now) {
   } else {
     int st = s_mqtt->state();
     if (st == MQTT_CONNECT_BAD_CREDENTIALS || st == MQTT_CONNECT_UNAUTHORIZED) {
-      _errorf("Device key ditolak server (salah atau sudah dicabut). Salin key baru dari dashboard.");
+      _errorf("Device key rejected by server (wrong or revoked). Copy a new key from the dashboard.");
       _mqttBackoff = 60000;
     } else if (s_tls->getLastSSLError() != 0) {
-      _errorf("Sertifikat server tidak valid atau jam perangkat salah (kode TLS %d).", s_tls->getLastSSLError());
+      _errorf("Invalid server certificate or device clock is wrong (TLS code %d).", s_tls->getLastSSLError());
     } else {
-      _errorf("Tidak bisa terhubung ke server (kode %d). Mencoba lagi %lu detik lagi.", st, _mqttBackoff / 1000);
+      _errorf("Cannot connect to the server (code %d). Retrying in %lu seconds.", st, _mqttBackoff / 1000);
     }
     _mqttRetryAt = now + _mqttBackoff;
     _mqttBackoff = min(_mqttBackoff * 2, 60000UL);
@@ -393,32 +393,32 @@ void LegowoClass::_handleMqtt(unsigned long now) {
 }
 
 void LegowoClass::_onConnected() {
-  _logf("Terhubung ke server Legowo. Device ID %s", _deviceId);
+  _logf("Connected to the Legowo server. Device ID %s", _deviceId);
   _greeted = true;
   _sendStatus();
-  // Kirim ulang semua nilai terakhir agar dashboard langsung sinkron.
+  // Resend all last values so the dashboard syncs immediately.
   for (int i = 0; i < LEGOWO_MAX_CHANNELS; i++) _dirty[i] = _dirty[i] || _written[i];
   _flushSoon = true;
   legowo_ota::onConnected();
 }
 
 void LegowoClass::_onDisconnected() {
-  if (_mqttUp) _logf("Koneksi ke server terputus.");
+  if (_mqttUp) _logf("Connection to the server lost.");
   _mqttUp = false;
 #if defined(ESP32)
   int err = s_lastError;
   s_lastError = 0;
   if (err == 1) {
-    _errorf("Device key ditolak server (salah atau sudah dicabut). Salin key baru dari dashboard.");
+    _errorf("Device key rejected by server (wrong or revoked). Copy a new key from the dashboard.");
     _mqttBackoff = 60000;
     return;
   }
   if (err == 2) {
-    _errorf("Sertifikat server tidak valid. Periksa jam perangkat atau LEGOWO_CA_CERT.");
+    _errorf("Invalid server certificate. Check the device clock or LEGOWO_CA_CERT.");
   } else if (err == 3) {
-    _errorf("Tidak bisa terhubung ke %s. Periksa koneksi internet.", _s->mqttHost);
+    _errorf("Cannot connect to %s. Check the internet connection.", _s->mqttHost);
   }
-  _logf("Mencoba lagi dalam %lu detik.", _mqttBackoff / 1000);
+  _logf("Retrying in %lu seconds.", _mqttBackoff / 1000);
   _mqttBackoff = min(_mqttBackoff * 2, 60000UL);
 #endif
 }
@@ -434,7 +434,7 @@ void LegowoClass::_publish(const char* suffix, const char* payload, int qos) {
 #if defined(ESP32)
   esp_mqtt_client_publish(s_client, topic, payload, 0, qos, 0);
 #elif defined(ESP8266)
-  (void)qos;  // PubSubClient hanya QoS 0 untuk publish
+  (void)qos;  // PubSubClient only supports QoS 0 for publish
   s_mqtt->publish(topic, payload);
 #endif
 }
@@ -454,9 +454,9 @@ void LegowoClass::_sendStatus() {
   doc["ip"] = WiFi.localIP().toString();
   doc["heap"] = ESP.getFreeHeap();
   doc["uptime"] = millis() / 1000;
-  // Deklarasikan channel yang berperan kontrol: punya handler (LEGOWO_RECEIVE/onReceive) atau
-  // binding switch/slider. Server memakai ini untuk menyimpan histori channel kontrol saat
-  // nilainya berubah, dan sensor sebagai rata-rata per jendela. Nomor channel tidak menentukan peran.
+  // Declare which channels act as controls: those with a handler (LEGOWO_RECEIVE/onReceive) or a
+  // switch/slider binding. The server uses this to store control-channel history when the value
+  // changes, and sensors as a per-window average. The channel number does not decide the role.
   JsonArray control = doc["control"].to<JsonArray>();
   for (int i = 0; i < LEGOWO_MAX_CHANNELS; i++) {
     if (_handlers[i] || _switches[i].active || _isSliderChannel(i)) control.add(i);
@@ -485,7 +485,7 @@ void LegowoClass::_flushTelemetry() {
   char buf[768];
   serializeJson(doc, buf, sizeof(buf));
   _publish("telemetry", buf, 0);
-  if (_debug) _logf("Kirim telemetri: %s", buf);
+  if (_debug) _logf("Sent telemetry: %s", buf);
 }
 
 void LegowoClass::_otaReport(const char* id, const char* version, const char* status, int progress, const char* message) {
@@ -527,8 +527,8 @@ void LegowoClass::syncAll() {
 void LegowoClass::_onMessage(uint8_t kind, const char* data, size_t len) {
   if (kind == MSG_OTA) {
     if (!_otaEnabled) {
-      _logf("Perintah OTA diabaikan karena OTA dimatikan (disableOTA).");
-      _otaReport(nullptr, nullptr, "failed", -1, "OTA dimatikan di perangkat");
+      _logf("OTA command ignored because OTA is disabled (disableOTA).");
+      _otaReport(nullptr, nullptr, "failed", -1, "OTA is disabled on the device");
       return;
     }
     legowo_ota::request(data, len);
@@ -536,7 +536,7 @@ void LegowoClass::_onMessage(uint8_t kind, const char* data, size_t len) {
   }
   JsonDocument doc;
   if (deserializeJson(doc, data, len)) {
-    if (_debug) _logf("Perintah tidak dikenali (bukan JSON).");
+    if (_debug) _logf("Unrecognized command (not JSON).");
     return;
   }
   JsonObject obj = doc.as<JsonObject>();
@@ -569,7 +569,7 @@ void LegowoClass::_applyCommand(int ch, float v) {
   }
   if (_debug) _logf("Dashboard -> channel %d = %s", ch, String(v).c_str());
   if (_handlers[ch]) _handlers[ch](LegowoParam(v));
-  // Kirim balik nilai sebagai konfirmasi ke dashboard.
+  // Echo the value back to the dashboard as a confirmation.
   _dirty[ch] = true;
   _flushSoon = true;
 }
@@ -617,7 +617,7 @@ void LegowoClass::_pollSensors() {
         break;
       }
     }
-    // Hanya kirim jika berubah, supaya tidak membanjiri server.
+    // Only send when changed, to avoid flooding the server.
     if (!_written[b.channel] || _values[b.channel] != v) write(b.channel, v);
   }
 }

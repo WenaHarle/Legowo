@@ -1,44 +1,50 @@
 # Changelog
 
+## 1.1.4
+
+- **Documentation and comments translated to English** (the public-facing default), with the
+  Indonesian README kept at [`README.id.md`](README.id.md). Source code comments, example sketch
+  comments, Serial Monitor messages, and the Arduino Library Manager description are now English.
+  No API changes.
+
 ## 1.1.3
 
-- Makro baru **`LEGOWO_RECEIVE(ch)`** untuk menerima nilai dari dashboard — nama yang lebih jelas
-  arahnya (`Legowo.write` = kirim ke dashboard, `LEGOWO_RECEIVE` = terima dari dashboard). Semua
-  contoh dan README kini memakai nama ini. **`LEGOWO_WRITE(ch)` tetap didukung** sebagai alias
-  (kompatibel; tidak ada perubahan yang merusak kode lama).
+- New macro **`LEGOWO_RECEIVE(ch)`** to receive a value from the dashboard — a clearer name for the
+  direction (`Legowo.write` = send to the dashboard, `LEGOWO_RECEIVE` = receive from the dashboard).
+  All examples and the README now use this name. **`LEGOWO_WRITE(ch)` is still supported** as an alias
+  (compatible; no breaking changes to existing code).
 
 ## 1.1.2
 
-- Pesan status kini menyertakan **alamat IP** perangkat (selain RSSI yang sudah ada), sehingga
-  dashboard bisa menampilkan IP dan kekuatan sinyal Wi-Fi di bagian status perangkat.
+- The status message now includes the device's **IP address** (in addition to the existing RSSI), so
+  the dashboard can show the IP and Wi-Fi signal strength in the device status section.
 
 ## 1.1.1
 
-- **Fallback DNS publik** (8.8.8.8 dan 1.1.1.1) dipasang otomatis setelah Wi-Fi tersambung. DNS dari
-  jaringan tetap jadi utama; fallback dipakai bila yang utama gagal. Memperbaiki kasus perangkat dapat
-  IP tapi gagal me-resolve nama host (`getaddrinfo() returns 202`) di hotspot/jaringan dengan DNS
-  bermasalah, sehingga NTP dan broker MQTT tetap bisa dijangkau.
-- Contoh baru **SendReceive**: mengirim data dummy (penghitung, gelombang, acak) ke dashboard dan
-  menampilkan nilai yang diterima dari dashboard di Serial Monitor, tanpa perlu perangkat keras.
+- **Public DNS fallback** (8.8.8.8 and 1.1.1.1) is set up automatically after Wi-Fi connects. The
+  network's DNS stays primary; the fallback is used if the primary fails. Fixes the case where a device
+  gets an IP but fails to resolve host names (`getaddrinfo() returns 202`) on hotspots/networks with
+  broken DNS, so NTP and the MQTT broker stay reachable.
+- New **SendReceive** example: sends dummy data (counter, wave, random) to the dashboard and prints the
+  values received from the dashboard on the Serial Monitor, with no hardware needed.
 
 ## 1.1.0
 
-- **Peran channel tidak lagi ditentukan oleh nomornya.** Nomor channel bebas (0–31); gunakan
-  `Legowo.write(ch, ...)` untuk sensor dan `LEGOWO_WRITE(ch)`/`onReceive`/`bindSwitch`/`bindSlider`
-  untuk kontrol. Library mendeklarasikan daftar channel kontrol ke server lewat pesan status, jadi
-  server menyimpan histori tiap channel sesuai perannya tanpa bergantung pada nomor (sebelumnya
-  0–9 = sensor, 10+ = kontrol).
-- Dokumentasi dan contoh diperbarui mengikuti perubahan ini. Tidak ada perubahan API; sketch lama
-  tetap jalan.
+- **A channel's role is no longer decided by its number.** Channel numbers are free (0–31); use
+  `Legowo.write(ch, ...)` for sensors and `LEGOWO_WRITE(ch)`/`onReceive`/`bindSwitch`/`bindSlider` for
+  controls. The library declares the list of control channels to the server via the status message, so
+  the server stores each channel's history by its role without depending on the number (previously
+  0–9 = sensor, 10+ = control).
+- Documentation and examples updated to match. No API changes; existing sketches keep working.
 
 ## 1.0.0
 
-Rilis pertama library Legowo.
+First release of the Legowo library.
 
-- `Legowo.begin(ssid, password, deviceKey)` dan `Legowo.run()` non-blocking dengan reconnect Wi-Fi/MQTT
-  (backoff eksponensial) dan pesan Serial yang jelas.
-- ESP32: MQTT over WebSocket + TLS ke `lmqtt.madewena.com:443` dengan verifikasi sertifikat.
-- `LEGOWO_WRITE(channel)`, `onReceive`, `bindSwitch`, `bindSlider`, `bindSensor`, dan timer `every()`.
-- OTA bawaan (ESP32): unduhan HTTPS terautentikasi, verifikasi ukuran/SHA-256/tanda tangan,
-  anti-rollback, dan rollback otomatis jika firmware baru tidak sehat.
-- ESP8266 eksperimental (MQTT TLS 8883, tanpa OTA).
+- `Legowo.begin(ssid, password, deviceKey)` and non-blocking `Legowo.run()` with Wi-Fi/MQTT reconnect
+  (exponential backoff) and clear Serial messages.
+- ESP32: MQTT over WebSocket + TLS to `lmqtt.madewena.com:443` with certificate verification.
+- `LEGOWO_WRITE(channel)`, `onReceive`, `bindSwitch`, `bindSlider`, `bindSensor`, and the `every()` timer.
+- Built-in OTA (ESP32): authenticated HTTPS download, size/SHA-256/signature verification,
+  anti-rollback, and automatic rollback if the new firmware is unhealthy.
+- Experimental ESP8266 (MQTT TLS 8883, no OTA).

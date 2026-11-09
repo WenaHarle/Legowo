@@ -1,17 +1,17 @@
-// Internal: klien OTA Legowo. Tidak perlu di-include dari sketch.
+// Internal: Legowo OTA client. No need to include this from a sketch.
 #pragma once
 #include <Arduino.h>
 
 struct LegowoSettings;
 
 namespace legowo_ota {
-// Dipanggil sekali dari Legowo.begin(): cek apakah firmware ini hasil OTA yang belum divalidasi.
+// Called once from Legowo.begin(): check whether this firmware is an OTA build not yet validated.
 void setup(const LegowoSettings* s, const char* deviceId, const char* secret);
-// Dipanggil setelah MQTT terhubung: tandai firmware sehat / laporkan hasil OTA sebelumnya.
+// Called after MQTT connects: mark the firmware healthy / report the previous OTA result.
 void onConnected();
-// Pesan dari {prefix}/devices/{id}/ota
+// Message from {prefix}/devices/{id}/ota
 void request(const char* json, size_t len);
-// Dipanggil dari Legowo.run(): unduh bertahap, watchdog rollback.
+// Called from Legowo.run(): incremental download, rollback watchdog.
 void loop();
 bool busy();
 }  // namespace legowo_ota

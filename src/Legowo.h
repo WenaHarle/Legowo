@@ -1,32 +1,32 @@
 /*
- * Legowo - library IoT untuk ESP32 (dan ESP8266) yang terhubung ke server Legowo.
+ * Legowo - IoT library for the ESP32 (and ESP8266) that connects to the Legowo server.
  *
  *   #define LEGOWO_FW_VERSION "1.0.0"
  *   #include <Legowo.h>
  *
  *   void setup() {
- *     Legowo.begin("SSID", "PASSWORD", "DEVICE_KEY");   // key disalin dari dashboard
+ *     Legowo.begin("SSID", "PASSWORD", "DEVICE_KEY");   // key copied from the dashboard
  *   }
  *   void loop() {
  *     Legowo.run();                                     // non-blocking
  *   }
- *   LEGOWO_RECEIVE(10) {                                // terima nilai dari dashboard
+ *   LEGOWO_RECEIVE(10) {                                // receive a value from the dashboard
  *     digitalWrite(2, param.asInt());
  *   }
  *
- * Nomor channel bebas (0 s/d LEGOWO_MAX_CHANNELS-1). Peran channel TIDAK ditentukan oleh nomornya,
- * melainkan oleh cara Anda memakainya: Legowo.write(ch, nilai) MENGIRIM data ke dashboard,
- * sedangkan LEGOWO_RECEIVE(ch){...} (atau onReceive/bindSwitch/bindSlider) MENERIMA nilai dari
- * dashboard. (LEGOWO_WRITE masih didukung sebagai nama lama untuk LEGOWO_RECEIVE.)
- * Library otomatis memberi tahu server channel mana yang berperan kontrol.
- * Koneksi Wi-Fi/MQTT, TLS, reconnect, dan OTA ditangani library.
+ * Channel numbers are free (0 to LEGOWO_MAX_CHANNELS-1). A channel's role is NOT decided by its
+ * number, but by how you use it: Legowo.write(ch, value) SENDS data to the dashboard, while
+ * LEGOWO_RECEIVE(ch){...} (or onReceive/bindSwitch/bindSlider) RECEIVES a value from the dashboard.
+ * (LEGOWO_WRITE is still supported as the old name for LEGOWO_RECEIVE.)
+ * The library automatically tells the server which channels act as controls.
+ * Wi-Fi/MQTT, TLS, reconnect, and OTA are handled by the library.
  */
 #pragma once
 
 #include <Arduino.h>
 #include "LegowoConfig.h"
 
-// ---------------------------------------------------------------------------- Nilai channel
+// ---------------------------------------------------------------------------- Channel value
 class LegowoParam {
  public:
   explicit LegowoParam(float v = 0) : _v(v) {}
@@ -44,13 +44,13 @@ typedef void (*LegowoHandler)(LegowoParam param);
 
 enum LegowoSensorMode {
   DIGITAL_NORMAL,    // digitalRead (0/1)
-  DIGITAL_INVERTED,  // !digitalRead, pin INPUT_PULLUP (tombol ke GND)
+  DIGITAL_INVERTED,  // !digitalRead, pin INPUT_PULLUP (button to GND)
   ANALOG_RAW,        // analogRead mentah
   ANALOG_PERCENT     // analogRead dipetakan 0-100
 };
 
 // ---------------------------------------------------------------------------- Timer ringan
-// Pengganti delay(): fungsi dipanggil berkala tanpa memblokir loop().
+// A delay() replacement: a function called periodically without blocking loop().
 class LegowoTimer {
  public:
   typedef void (*Callback)();
@@ -74,8 +74,8 @@ class LegowoTimer {
 };
 
 // ---------------------------------------------------------------------------- Pengaturan build
-// Diisi dari #define di sketch (lewat begin() inline di bawah), karena #define sketch
-// tidak terlihat oleh file .cpp library.
+// Filled from the sketch's #defines (via the inline begin() below), because the sketch's
+// #defines are not visible to the library's .cpp files.
 struct LegowoSettings {
   const char* fwVersion;
   const char* board;
@@ -92,7 +92,7 @@ struct LegowoSettings {
 
 class LegowoClass {
  public:
-  // Mulai koneksi Wi-Fi dan MQTT (tidak memblokir). deviceKey: "<device_id>:<secret>" dari dashboard.
+  // Start the Wi-Fi and MQTT connection (non-blocking). deviceKey: "<device_id>:<secret>" from the dashboard.
   bool begin(const char* ssid, const char* password, const char* deviceKey) {
     static const LegowoSettings s = {
       LEGOWO_FW_VERSION, LEGOWO_BOARD, LEGOWO_MQTT_HOST, LEGOWO_MQTT_WS_PORT, LEGOWO_MQTT_WS_PATH,
@@ -102,34 +102,34 @@ class LegowoClass {
     return _begin(ssid, password, deviceKey, s);
   }
 
-  // Panggil sesering mungkin di loop(). Jangan pakai delay() panjang.
+  // Call as often as possible in loop(). Do not use long delay() calls.
   void run();
 
-  // Kirim nilai ke dashboard (dikirim berkelompok setiap interval).
+  // Send a value to the dashboard (batched per interval).
   void write(int channel, float value);
   void write(int channel, int value) { write(channel, (float)value); }
   void write(int channel, bool value) { write(channel, value ? 1.0f : 0.0f); }
   void virtualWrite(int channel, float value) { write(channel, value); }
 
-  // Nilai terakhir channel (dari dashboard atau dari write()).
+  // The channel's last value (from the dashboard or from write()).
   float read(int channel) const;
 
-  // Handler saat dashboard mengirim nilai ke channel ini.
+  // Handler for when the dashboard sends a value to this channel.
   void onReceive(int channel, LegowoHandler handler);
 
-  // Binding tanpa kode: dashboard -> pin, atau pin -> dashboard.
+  // Code-free bindings: dashboard -> pin, or pin -> dashboard.
   void bindSwitch(int channel, int pin, bool activeLow = false);
   void bindSlider(int channel, int pin, int minVal = 0, int maxVal = 255);
   void bindSensor(int channel, int pin, LegowoSensorMode mode = DIGITAL_NORMAL);
 
-  // Jalankan fungsi berkala tanpa delay(). Mengembalikan id timer.
+  // Run a function periodically without delay(). Returns a timer id.
   int every(unsigned long ms, LegowoTimer::Callback cb) { return timer.setInterval(ms, cb); }
 
-  void setInterval(unsigned long ms);  // interval kirim telemetri & baca sensor (default 2000 ms)
+  void setInterval(unsigned long ms);  // telemetry send & sensor read interval (default 2000 ms)
   void setDebug(bool enable) { _debug = enable; }
-  void syncAll();                       // kirim ulang semua channel yang pernah ditulis
+  void syncAll();                       // resend every channel that was ever written
 
-  // OTA aktif secara default. Matikan bila perangkat tidak boleh diperbarui dari server.
+  // OTA is enabled by default. Disable it if the device must not be updated from the server.
   void enableOTA() { _otaEnabled = true; }
   void disableOTA() { _otaEnabled = false; }
   bool otaEnabled() const { return _otaEnabled; }
@@ -209,9 +209,9 @@ class LegowoClass {
 
 extern LegowoClass Legowo;
 
-// Daftarkan handler untuk MENERIMA nilai dari dashboard di satu channel:
+// Register a handler to RECEIVE a value from the dashboard on one channel:
 //   LEGOWO_RECEIVE(10) { digitalWrite(LED, param.asInt()); }
-// (Untuk MENGIRIM ke dashboard pakai Legowo.write(ch, nilai).)
+// (To SEND to the dashboard use Legowo.write(ch, value).)
 struct LegowoRegistrar {
   LegowoRegistrar(int channel, LegowoHandler h) { LegowoClass::registerMacroHandler(channel, h); }
 };
@@ -220,6 +220,6 @@ struct LegowoRegistrar {
   static LegowoRegistrar _legowo_reg_##ch((ch), _legowo_rx_##ch);  \
   static void _legowo_rx_##ch(LegowoParam param)
 
-// Nama lama (gaya Blynk) — tetap didukung demi kompatibilitas, tapi LEGOWO_RECEIVE
-// lebih jelas arahnya (write = kirim ke dashboard, receive = terima dari dashboard).
+// Old name (Blynk-style) — still supported for compatibility, but LEGOWO_RECEIVE
+// is clearer about direction (write = send to dashboard, receive = receive from dashboard).
 #define LEGOWO_WRITE(ch) LEGOWO_RECEIVE(ch)

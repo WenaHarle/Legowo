@@ -1,6 +1,6 @@
-// Root CA untuk memverifikasi sertifikat server Legowo (Cloudflare Universal SSL / Let's Encrypt).
-// Dipakai untuk MQTT over WSS dan unduhan OTA. Dibuat dari paket ca-certificates (Mozilla).
-// Ganti dengan #define LEGOWO_CA_CERT "..." sebelum #include <Legowo.h> bila perlu.
+// Root CAs to verify the Legowo server certificate (Cloudflare Universal SSL / Let's Encrypt).
+// Used for MQTT over WSS and OTA downloads. Built from the ca-certificates package (Mozilla).
+// Override with #define LEGOWO_CA_CERT "..." before #include <Legowo.h> if needed.
 #pragma once
 
 static const char LEGOWO_CA_BUNDLE[] =
