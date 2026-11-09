@@ -25,7 +25,7 @@ void loop() {
   Legowo.run();
 }
 
-LEGOWO_WRITE(10) { terapkanWarna(); }
-LEGOWO_WRITE(11) { terapkanWarna(); }
-LEGOWO_WRITE(12) { terapkanWarna(); }
-LEGOWO_WRITE(13) { terapkanWarna(); }
+LEGOWO_RECEIVE(10) { terapkanWarna(); }
+LEGOWO_RECEIVE(11) { terapkanWarna(); }
+LEGOWO_RECEIVE(12) { terapkanWarna(); }
+LEGOWO_RECEIVE(13) { terapkanWarna(); }

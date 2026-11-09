@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.3
+
+- Makro baru **`LEGOWO_RECEIVE(ch)`** untuk menerima nilai dari dashboard — nama yang lebih jelas
+  arahnya (`Legowo.write` = kirim ke dashboard, `LEGOWO_RECEIVE` = terima dari dashboard). Semua
+  contoh dan README kini memakai nama ini. **`LEGOWO_WRITE(ch)` tetap didukung** sebagai alias
+  (kompatibel; tidak ada perubahan yang merusak kode lama).
+
 ## 1.1.2
 
 - Pesan status kini menyertakan **alamat IP** perangkat (selain RSSI yang sudah ada), sehingga

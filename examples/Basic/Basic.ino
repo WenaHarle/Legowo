@@ -25,6 +25,6 @@ void loop() {
   Legowo.run();
 }
 
-LEGOWO_WRITE(10) {                      // switch di dashboard -> channel 10
+LEGOWO_RECEIVE(10) {                    // switch di dashboard -> channel 10
   digitalWrite(LED_PIN, param.asInt());
 }

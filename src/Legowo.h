@@ -10,14 +10,15 @@
  *   void loop() {
  *     Legowo.run();                                     // non-blocking
  *   }
- *   LEGOWO_WRITE(10) {                                  // terima kontrol dari dashboard
+ *   LEGOWO_RECEIVE(10) {                                // terima nilai dari dashboard
  *     digitalWrite(2, param.asInt());
  *   }
  *
  * Nomor channel bebas (0 s/d LEGOWO_MAX_CHANNELS-1). Peran channel TIDAK ditentukan oleh nomornya,
- * melainkan oleh cara Anda memakainya: Legowo.write(ch, nilai) mengirim data sensor ke dashboard,
- * sedangkan LEGOWO_WRITE(ch){...} (atau onReceive/bindSwitch/bindSlider) menerima kontrol dari
- * dashboard. Library otomatis memberi tahu server channel mana yang berperan kontrol.
+ * melainkan oleh cara Anda memakainya: Legowo.write(ch, nilai) MENGIRIM data ke dashboard,
+ * sedangkan LEGOWO_RECEIVE(ch){...} (atau onReceive/bindSwitch/bindSlider) MENERIMA nilai dari
+ * dashboard. (LEGOWO_WRITE masih didukung sebagai nama lama untuk LEGOWO_RECEIVE.)
+ * Library otomatis memberi tahu server channel mana yang berperan kontrol.
  * Koneksi Wi-Fi/MQTT, TLS, reconnect, dan OTA ditangani library.
  */
 #pragma once
@@ -208,12 +209,17 @@ class LegowoClass {
 
 extern LegowoClass Legowo;
 
-// Daftarkan handler kontrol dari dashboard untuk satu channel:
-//   LEGOWO_WRITE(10) { digitalWrite(LED, param.asInt()); }
+// Daftarkan handler untuk MENERIMA nilai dari dashboard di satu channel:
+//   LEGOWO_RECEIVE(10) { digitalWrite(LED, param.asInt()); }
+// (Untuk MENGIRIM ke dashboard pakai Legowo.write(ch, nilai).)
 struct LegowoRegistrar {
   LegowoRegistrar(int channel, LegowoHandler h) { LegowoClass::registerMacroHandler(channel, h); }
 };
-#define LEGOWO_WRITE(ch)                                            \
-  static void _legowo_write_##ch(LegowoParam param);                \
-  static LegowoRegistrar _legowo_reg_##ch((ch), _legowo_write_##ch); \
-  static void _legowo_write_##ch(LegowoParam param)
+#define LEGOWO_RECEIVE(ch)                                         \
+  static void _legowo_rx_##ch(LegowoParam param);                  \
+  static LegowoRegistrar _legowo_reg_##ch((ch), _legowo_rx_##ch);  \
+  static void _legowo_rx_##ch(LegowoParam param)
+
+// Nama lama (gaya Blynk) — tetap didukung demi kompatibilitas, tapi LEGOWO_RECEIVE
+// lebih jelas arahnya (write = kirim ke dashboard, receive = terima dari dashboard).
+#define LEGOWO_WRITE(ch) LEGOWO_RECEIVE(ch)

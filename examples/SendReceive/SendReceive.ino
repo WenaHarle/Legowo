@@ -47,10 +47,10 @@ void loop() {
 // ----------------------------------------------------------------- Terima nilai
 // Nilai dari dashboard ditampilkan di Serial Monitor (tidak butuh perangkat keras).
 
-LEGOWO_WRITE(10) {                  // Slider dashboard (mis. 0..255) -> channel 10
+LEGOWO_RECEIVE(10) {               // Slider dashboard (mis. 0..255) -> channel 10
   Serial.printf("[terima] slider channel 10 = %d\n", param.asInt());
 }
 
-LEGOWO_WRITE(11) {                  // Switch dashboard (ON/OFF) -> channel 11
+LEGOWO_RECEIVE(11) {               // Switch dashboard (ON/OFF) -> channel 11
   Serial.printf("[terima] switch channel 11 = %s\n", param.asBool() ? "ON" : "OFF");
 }
