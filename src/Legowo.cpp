@@ -24,7 +24,7 @@
 #error "The Legowo library only supports ESP32 and ESP8266."
 #endif
 
-#define LEGOWO_LIB_VERSION "1.1.4"
+#define LEGOWO_LIB_VERSION "1.2.0"
 
 LegowoClass Legowo;
 

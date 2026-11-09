@@ -117,7 +117,7 @@ bukan seberapa banyak data yang disimpan. Server membatasi 20 pesan/detik per pe
 | `Legowo.run()` | Panggil terus di `loop()`. |
 | `Legowo.write(ch, nilai)` | Kirim nilai ke dashboard (dikelompokkan tiap interval). |
 | `Legowo.read(ch)` | Nilai terakhir channel. |
-| `LEGOWO_RECEIVE(ch) { ... }` | Handler saat dashboard mengirim nilai; `param.asInt()`, `asFloat()`, `asBool()`. (`LEGOWO_WRITE` = nama lama yang masih didukung.) |
+| `LEGOWO_RECEIVE(ch) { ... }` | Handler saat dashboard mengirim nilai; `param.asInt()`, `asFloat()`, `asBool()`. |
 | `Legowo.onReceive(ch, fungsi)` | Sama seperti `LEGOWO_RECEIVE`, didaftarkan saat runtime. |
 | `Legowo.bindSwitch(ch, pin, activeLow=false)` | Switch dashboard langsung mengendalikan pin. |
 | `Legowo.bindSlider(ch, pin, min, max)` | Slider dashboard → PWM pin. |

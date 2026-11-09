@@ -118,7 +118,7 @@ server limits each device to 20 messages/second.
 | `Legowo.run()` | Call continuously in `loop()`. |
 | `Legowo.write(ch, value)` | Send a value to the dashboard (batched per interval). |
 | `Legowo.read(ch)` | Last value of a channel. |
-| `LEGOWO_RECEIVE(ch) { ... }` | Handler for when the dashboard sends a value; `param.asInt()`, `asFloat()`, `asBool()`. (`LEGOWO_WRITE` is the old name, still supported.) |
+| `LEGOWO_RECEIVE(ch) { ... }` | Handler for when the dashboard sends a value; `param.asInt()`, `asFloat()`, `asBool()`. |
 | `Legowo.onReceive(ch, fn)` | Same as `LEGOWO_RECEIVE`, registered at runtime. |
 | `Legowo.bindSwitch(ch, pin, activeLow=false)` | A dashboard switch drives the pin directly. |
 | `Legowo.bindSlider(ch, pin, min, max)` | A dashboard slider → PWM pin. |

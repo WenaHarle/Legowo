@@ -1,11 +1,13 @@
 # Changelog
 
-## 1.1.4
+## 1.2.0
 
+- **BREAKING: `LEGOWO_WRITE(ch)` removed.** Use `LEGOWO_RECEIVE(ch)` instead (same behavior, clearer
+  name). Sketches still using the old macro will not compile — rename `LEGOWO_WRITE` to
+  `LEGOWO_RECEIVE`. The alias existed only in 1.1.3; this drops the duplicate.
 - **Documentation and comments translated to English** (the public-facing default), with the
   Indonesian README kept at [`README.id.md`](README.id.md). Source code comments, example sketch
   comments, Serial Monitor messages, and the Arduino Library Manager description are now English.
-  No API changes.
 
 ## 1.1.3
 

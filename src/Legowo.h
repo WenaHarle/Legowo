@@ -17,7 +17,6 @@
  * Channel numbers are free (0 to LEGOWO_MAX_CHANNELS-1). A channel's role is NOT decided by its
  * number, but by how you use it: Legowo.write(ch, value) SENDS data to the dashboard, while
  * LEGOWO_RECEIVE(ch){...} (or onReceive/bindSwitch/bindSlider) RECEIVES a value from the dashboard.
- * (LEGOWO_WRITE is still supported as the old name for LEGOWO_RECEIVE.)
  * The library automatically tells the server which channels act as controls.
  * Wi-Fi/MQTT, TLS, reconnect, and OTA are handled by the library.
  */
@@ -219,7 +218,3 @@ struct LegowoRegistrar {
   static void _legowo_rx_##ch(LegowoParam param);                  \
   static LegowoRegistrar _legowo_reg_##ch((ch), _legowo_rx_##ch);  \
   static void _legowo_rx_##ch(LegowoParam param)
-
-// Old name (Blynk-style) — still supported for compatibility, but LEGOWO_RECEIVE
-// is clearer about direction (write = send to dashboard, receive = receive from dashboard).
-#define LEGOWO_WRITE(ch) LEGOWO_RECEIVE(ch)
