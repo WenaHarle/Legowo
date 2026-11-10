@@ -212,6 +212,32 @@ Write the `#define`s **before** `#include <Legowo.h>`:
 | `Invalid server certificate` | Make sure the clock can sync (internet to NTP) and that `LEGOWO_CA_CERT` is unchanged. |
 | `partition scheme without OTA slot` | Pick a partition scheme with OTA in the *Tools* menu. |
 
+## Driving a WS2812 / NeoPixel LED together with Wi-Fi (ESP32-S3)
+
+Calling `neopixelWrite()` (the Arduino core WS2812 helper, used by the onboard RGB LED) **from inside a
+`LEGOWO_RECEIVE` handler** can crash the device — random `Guru Meditation` (`LoadProhibited` /
+`IllegalInstruction`) deep inside the Wi-Fi driver, usually right after connect. The RMT peripheral that
+drives the LED clashes with the Wi-Fi driver's interrupt timing when triggered during MQTT message
+handling. It is not a Legowo bug (the `RGB_LED` example uses `analogWrite` PWM, which is safe).
+
+If you use a WS2812/NeoPixel, do both of these:
+
+1. **Update the LED from `loop()` via a flag, not inside the handler.** The handler only stores the value
+   and sets a `dirty` flag; `loop()` refreshes the LED once per iteration.
+2. Prefer the **Adafruit NeoPixel** library (`begin()` once, then `setPixelColor()` + `show()`) over
+   repeated `neopixelWrite()` calls.
+
+```cpp
+#include <Adafruit_NeoPixel.h>
+Adafruit_NeoPixel led(1, 48, NEO_GRB + NEO_KHZ800);   // GPIO48 (DevKitC v1.0; use 38 on v1.1)
+volatile bool dirty = true;
+
+void setup() { led.begin(); led.show(); Legowo.begin(SSID, PASS, KEY); }
+void loop()  { Legowo.run(); if (dirty) { dirty = false; led.setPixelColor(0, led.Color(r, g, b)); led.show(); } }
+
+LEGOWO_RECEIVE(0) { r = constrain(param.asInt(), 0, 255); dirty = true; }   // no LED call here
+```
+
 ## ESP8266
 
 Experimentally supported for telemetry and control, via MQTT TLS port 8883 to `LEGOWO_MQTT_TLS_HOST`.

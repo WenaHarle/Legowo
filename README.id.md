@@ -211,6 +211,32 @@ Tulis `#define` **sebelum** `#include <Legowo.h>`:
 | `Sertifikat server tidak valid` | Pastikan jam bisa sinkron (internet ke NTP) dan `LEGOWO_CA_CERT` tidak diubah. |
 | `partition scheme tanpa slot OTA` | Pilih partition scheme dengan OTA di menu *Tools*. |
 
+## Mengendalikan LED WS2812 / NeoPixel bersama Wi-Fi (ESP32-S3)
+
+Memanggil `neopixelWrite()` (helper WS2812 bawaan Arduino, dipakai LED RGB onboard) **dari dalam handler
+`LEGOWO_RECEIVE`** bisa membuat perangkat crash — `Guru Meditation` acak (`LoadProhibited` /
+`IllegalInstruction`) jauh di dalam driver Wi-Fi, biasanya tepat setelah connect. Peripheral RMT yang
+menggerakkan LED bentrok dengan timing interrupt driver Wi-Fi saat dipicu di tengah pemrosesan pesan
+MQTT. Ini bukan bug Legowo (contoh `RGB_LED` memakai `analogWrite` PWM yang aman).
+
+Kalau memakai WS2812/NeoPixel, lakukan dua hal ini:
+
+1. **Perbarui LED dari `loop()` lewat flag, bukan di dalam handler.** Handler hanya menyimpan nilai dan
+   menyetel flag `dirty`; `loop()` menyegarkan LED sekali tiap iterasi.
+2. Lebih baik pakai library **Adafruit NeoPixel** (`begin()` sekali, lalu `setPixelColor()` + `show()`)
+   daripada memanggil `neopixelWrite()` berkali-kali.
+
+```cpp
+#include <Adafruit_NeoPixel.h>
+Adafruit_NeoPixel led(1, 48, NEO_GRB + NEO_KHZ800);   // GPIO48 (DevKitC v1.0; pakai 38 untuk v1.1)
+volatile bool dirty = true;
+
+void setup() { led.begin(); led.show(); Legowo.begin(SSID, PASS, KEY); }
+void loop()  { Legowo.run(); if (dirty) { dirty = false; led.setPixelColor(0, led.Color(r, g, b)); led.show(); } }
+
+LEGOWO_RECEIVE(0) { r = constrain(param.asInt(), 0, 255); dirty = true; }   // tidak memanggil LED di sini
+```
+
 ## ESP8266
 
 Didukung secara eksperimental untuk telemetri dan kontrol, lewat MQTT TLS port 8883 ke

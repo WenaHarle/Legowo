@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Dokumentasi: catatan troubleshooting untuk WS2812/NeoPixel (`neopixelWrite`) + Wi-Fi di ESP32-S3 —
+  jangan panggil `neopixelWrite()` dari dalam handler `LEGOWO_RECEIVE` (bisa crash driver Wi-Fi);
+  update LED dari `loop()` via flag / pakai Adafruit NeoPixel. Tidak ada perubahan kode library.
+
 ## 1.2.0
 
 - **BREAKING: `LEGOWO_WRITE(ch)` removed.** Use `LEGOWO_RECEIVE(ch)` instead (same behavior, clearer
